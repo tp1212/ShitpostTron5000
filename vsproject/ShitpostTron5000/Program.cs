@@ -32,7 +32,7 @@ namespace Blehgh
         {
             Client = new DiscordClient(new DiscordConfiguration
             {
-                Token = "Mzc2NDE3OTE3ODc4Nzk2Mjg4.DN-PqA.nWQ6PTqdYzJpH14ZeUZ1s2_LGFI",
+                Token = Token.TokenStr,
                 TokenType = TokenType.Bot
             });
 
