@@ -14,6 +14,7 @@ namespace Blehgh
         public static DiscordClient Client;
         static CommandsNextModule _commands;
         public static DateTime Start;
+        public static List<ExpanderChannel> ExpanderChannels = new List<ExpanderChannel>();
 
 
         static void Main(string[] args)
@@ -59,7 +60,8 @@ namespace Blehgh
           
             Client.VoiceStateUpdated += async e =>
             {
-                await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
+                
+                //await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
             };
 
             

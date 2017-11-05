@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -181,8 +182,35 @@ namespace Blehgh
 
 
 
-              await ctx.RespondAsync(response.ToString());
+            await ctx.RespondAsync(response.ToString());
             Console.WriteLine($"I gave a status update.");
+        }
+
+        [Command("move")]
+        public async Task Move(CommandContext ctx, DiscordMember user, DiscordChannel target)
+        {
+            await user.ModifyAsync(null, null, null, null, target, "for the lulz.");
+        }
+        [Command("mscount")]
+        public async Task Delete(CommandContext ctx, DiscordUser user, DiscordChannel where)
+        {
+
+           IReadOnlyList<DiscordMessage> msggs = await where.GetMessagesAsync(100,where.LastMessageId);
+           int c =  msggs.Count(x => x.Author.Id == user.Id);
+            StringBuilder response = new StringBuilder();
+            response.Append($"Of the last 100 posts in {where.Name}\n");
+            response.Append($"{c} were posted by {user.Username}\n");
+            await ctx.RespondAsync(response.ToString());
+         
+        }
+
+        [Command("expanderchannel")]
+        public async Task CreateExpanderChannel(CommandContext ctx, string name, string category)
+        {
+            ExpanderChannel exp = await ExpanderChannel.BuildExpanderChannel(ctx.Guild,name,category);
+            Program.Client.VoiceStateUpdated += exp.OnChannelUpdate;
+            Program.ExpanderChannels.Add(exp);
+
         }
     }
 }
