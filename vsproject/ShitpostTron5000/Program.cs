@@ -37,7 +37,7 @@ namespace Blehgh
                 ,UseInternalLogHandler = true
             });
 
-
+            
              _commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefix = "!"
@@ -56,13 +56,13 @@ namespace Blehgh
                     await e.Message.RespondAsync("pong!");
             };
 
-
+          
             Client.VoiceStateUpdated += async e =>
             {
                 await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
             };
 
-
+            
 
             
 

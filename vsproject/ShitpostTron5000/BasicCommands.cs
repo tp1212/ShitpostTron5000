@@ -15,6 +15,19 @@ namespace Blehgh
     {
         private static Random _rand = new Random();
 
+        [Command("stop")][Hidden]
+        [Description("STOP IT.")]
+        public async Task Stop(CommandContext ctx)
+        {
+            //await ctx.Message.DeleteAsync("Stopping it.");
+            
+            await ctx.RespondAsync(Enumerable.Repeat("STOP IT, ",100).Aggregate("",(c,n)=>c+n));
+            DiscordChannel pm = await Program.Client.CreateDmAsync(ctx.User);
+            await pm.SendMessageAsync(Enumerable.Repeat("STOP IT, ", 100).Aggregate("", (c, n) => c + n));
+            Console.WriteLine($"I had to stop it.");
+        }
+
+
         [Command("say")][Description("Make me bot say a thing.")]
         public async Task Say(CommandContext ctx,[RemainingText][Description("The message you want to say")]string text)
         {
