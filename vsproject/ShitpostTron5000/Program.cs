@@ -34,14 +34,21 @@ namespace Blehgh
             {
                 Token = Token.TokenStr,
                 TokenType = TokenType.Bot
+                ,UseInternalLogHandler = true
             });
+
 
              _commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefix = "!"
             });
             _commands.RegisterCommands<BasicCommands>();
-
+            
+            _commands.CommandErrored += async e =>
+            {
+               Console.WriteLine(  e.Exception.ToString());
+            };
+           
             Client.MessageCreated += async e =>
             {
                 if(e.Channel.Name == "devtrons")
@@ -54,6 +61,7 @@ namespace Blehgh
             {
                 await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
             };
+
 
 
             
