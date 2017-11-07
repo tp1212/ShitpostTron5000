@@ -1,27 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Data.Entity;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
 
-namespace Blehgh
+namespace ShitpostTron5000
 {
     class Program
     {
         public static DiscordClient Client;
         static CommandsNextModule _commands;
         public static DateTime Start;
-        public static List<ExpanderChannel> ExpanderChannels = new List<ExpanderChannel>();
+        public static DbSet<ExpanderChannel> ExpanderChannels;
 
 
         static void Main(string[] args)
         {
             Start = DateTime.Now;
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
-
+           
             while (true)
             {
                string msg = Console.ReadLine();
@@ -29,15 +26,29 @@ namespace Blehgh
             }
         }
 
-        static async Task MainAsync(string[] args)
+        static async Task init(string[] args)
         {
             Client = new DiscordClient(new DiscordConfiguration
             {
                 Token = Token.TokenStr,
-                TokenType = TokenType.Bot
-                ,UseInternalLogHandler = true
+                TokenType = TokenType.Bot,
+                UseInternalLogHandler = true
             });
+            
+            ShitpostTronContext db = new ShitpostTronContext();
+            ExpanderChannels = db.ExpanderChannels;
+            ExpanderChannels.Local.CollectionChanged += async (sender, eventArgs) => { await db.SaveChangesAsync(); };
+            foreach (ExpanderChannel expanderChannel in ExpanderChannels)
+            {
+               Client.VoiceStateUpdated+= expanderChannel.OnChannelUpdate;
+            }
+        }
+        
 
+            static async Task MainAsync(string[] args)
+            {
+
+                await init(args);
             
              _commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
