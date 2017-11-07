@@ -34,11 +34,6 @@ namespace Blehgh
             _category = category;
         }
 
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-
         public async Task OnChannelUpdate(VoiceStateUpdateEventArgs e)
         {
             if(e.Guild!= _server) //not my problem
@@ -50,7 +45,7 @@ namespace Blehgh
             if (!empty.Any())//all channels full
             {
                 //add new channel
-                 await _server.CreateChannelAsync(_baseName + (expanderChannels.Count+1), ChannelType.Voice, _category);
+                 await _server.CreateChannelAsync(_baseName + expanderChannels.Count, ChannelType.Voice, _category);
             }
             
             foreach (DiscordChannel discordChannel in empty.Skip(1))//some channels are empty. 
@@ -58,11 +53,11 @@ namespace Blehgh
                await discordChannel.DeleteAsync("bot auto deleting empty expander channel");
             }
 
-            expanderChannels = expanderChannels.OrderBy(x => empty.Any(y => y == x)).ToList();//ensure empty channels end up at the bottom.
             //restructure names.
             int i = 1;
+            // ReSharper disable once LoopCanBeConvertedToQuery code clarity
             foreach (DiscordChannel channl in expanderChannels)
-            { 
+            {
                await channl.ModifyAsync(_baseName + i, i++);
             }
         }
