@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Exceptions;
 
 namespace ShitpostTron5000
 {
@@ -45,30 +48,75 @@ namespace ShitpostTron5000
 
         public async Task OnChannelUpdate(VoiceStateUpdateEventArgs e)
         {
-            if(e.Guild!= Server) //not my problem
+            try
+            {
+
+            if (e.Guild != Server) 
+                return;//not my problem
+            if (e.Channel?.Parent != _category)
+                return;//also my problem
+            if (_category == null)//somethings wrong.
                 return;
-            List<DiscordMember> members = Server.Members.ToList();
-            List<DiscordChannel> expanderChannels = _category.Children.ToList();
-            IEnumerable<DiscordChannel> empty = expanderChannels.Where(x => members.All(u => u.VoiceState?.Channel != x)).ToList();//find empty channels
 
-            if (!empty.Any())//all channels full
+
+            lock (this)
             {
-                //add new channel
-                 await Server.CreateChannelAsync(BaseName + expanderChannels.Count, ChannelType.Voice, _category);
-            }
-            
-            foreach (DiscordChannel discordChannel in empty.Skip(1))//some channels are empty. 
-            {
-               await discordChannel.DeleteAsync("bot auto deleting empty expander channel");
+                
+                if (_isUpdating)
+                {
+                    return; //dont continue stomping over the other tasks changes.
+                }
+                _isUpdating = true; //prevent other tasks from stomping over my changes.
             }
 
-            //restructure names.
-            int i = 1;
-            // ReSharper disable once LoopCanBeConvertedToQuery code clarity
-            foreach (DiscordChannel channl in expanderChannels)
+                List<DiscordMember> members = Server.Members.ToList();
+               
+                List<DiscordChannel> expanderChannels = _category.Children.ToList();
+                IEnumerable<DiscordChannel> empty =
+                    expanderChannels.Where(x => members.All(u => u.VoiceState?.Channel != x))
+                        .ToList(); //find empty channels
+
+                if (!empty.Any()) //all channels full
+                {
+                    //add new channel
+                    await Server.CreateChannelAsync(BaseName + (expanderChannels.Count + 1), ChannelType.Voice,
+                        _category);
+                }
+
+                foreach (DiscordChannel discordChannel in empty.Skip(1)) //some channels are empty. 
+                {
+                    await discordChannel.DeleteAsync("bot auto deleting empty expander channel");
+                    expanderChannels.Remove(discordChannel);
+                }
+
+                if (empty.Any()) // move empty channels to end of list.
+                {
+                  expanderChannels = expanderChannels.OrderBy(x => empty.Any(y => x == y)).ToList();
+                }
+                //restructure names.
+                int i = 1;
+                // ReSharper disable once LoopCanBeConvertedToQuery code clarity
+                foreach (DiscordChannel channl in expanderChannels)
+                {
+                    try
+                    {
+                        await channl.ModifyAsync(BaseName + i, i++);
+                    }
+                    catch (NotFoundException)
+                    {
+                        Console.WriteLine("Tried to modify a non existant channel.");
+       
+                    }
+                    
+                }
+
+            }
+            finally
             {
-               await channl.ModifyAsync(BaseName + i, i++);
+                _isUpdating = false;
             }
         }
+        
+        private volatile bool _isUpdating = false;
     }
 }

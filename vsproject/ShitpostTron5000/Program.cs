@@ -55,7 +55,17 @@ namespace ShitpostTron5000
                 StringPrefix = "!"
             });
             _commands.RegisterCommands<BasicCommands>();
-            
+                Client.ClientErrored += async e =>
+                {
+                   
+                    Console.WriteLine(e.Exception.ToString());
+                    if (e.Exception.InnerException != null)
+                    {
+                        
+                    }
+                };
+
+
             _commands.CommandErrored += async e =>
             {
                Console.WriteLine(  e.Exception.ToString());
