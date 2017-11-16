@@ -13,20 +13,14 @@ namespace ShitpostTron5000
 {
     public class ExpanderChannel
     {
-        private ExpanderChannel()
-        {
-        }
       
-
-        private DiscordGuild _server;
-        private DiscordChannel _category;
+        
 
         [Key]
         public int Id { get; set; }
 
-        public long CatId { get=>unchecked((long)_category.Id); set => _category = Program.Client.GetChannelAsync(unchecked ((ulong)value)).GetAwaiter().GetResult(); }
-
-        public DiscordGuild Server => _server ?? (_server = _category.Guild);
+        public DiscordChannelGetter Category { get; set; }
+        public DiscordGuildGetter Guild { get; set; }
 
         public string BaseName { get; set; }
 
@@ -41,9 +35,9 @@ namespace ShitpostTron5000
 
         public ExpanderChannel(DiscordGuild targetGuild, string baseName, DiscordChannel category)
         {
-            _server = targetGuild;
+            Guild = new DiscordGuildGetter {SnowFlakeUlong = targetGuild.Id};
+            Category = new DiscordChannelGetter { SnowFlakeUlong = category.Id };
             this.BaseName = baseName;
-            _category = category;
         }
 
         public async Task OnChannelUpdate(VoiceStateUpdateEventArgs e)
@@ -51,11 +45,11 @@ namespace ShitpostTron5000
             try
             {
 
-            if (e.Guild != Server) 
+            if (e.Guild != await Guild.GetDiscordEntity()) 
                 return;//not my problem
-            if (e.Channel?.Parent != _category)
+            if (e.Channel?.Parent != await Category.GetDiscordEntity())
                 return;//also my problem
-            if (_category == null)//somethings wrong.
+            if (await Category.GetDiscordEntity() == null)//somethings wrong.
                 return;
 
 
@@ -69,9 +63,9 @@ namespace ShitpostTron5000
                 _isUpdating = true; //prevent other tasks from stomping over my changes.
             }
 
-                List<DiscordMember> members = Server.Members.ToList();
+                List<DiscordMember> members =  (await Guild.GetDiscordEntity()).Members.ToList();
                
-                List<DiscordChannel> expanderChannels = _category.Children.ToList();
+                List<DiscordChannel> expanderChannels = (await Category.GetDiscordEntity()).Children.ToList();
                 IEnumerable<DiscordChannel> empty =
                     expanderChannels.Where(x => members.All(u => u.VoiceState?.Channel != x))
                         .ToList(); //find empty channels
@@ -79,8 +73,8 @@ namespace ShitpostTron5000
                 if (!empty.Any()) //all channels full
                 {
                     //add new channel
-                    await Server.CreateChannelAsync(BaseName + (expanderChannels.Count + 1), ChannelType.Voice,
-                        _category);
+                    await (await Guild.GetDiscordEntity()).CreateChannelAsync(BaseName + (expanderChannels.Count + 1), ChannelType.Voice,
+                        (await Category.GetDiscordEntity()));
                 }
 
                 foreach (DiscordChannel discordChannel in empty.Skip(1)) //some channels are empty. 

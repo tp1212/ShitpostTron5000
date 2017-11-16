@@ -12,6 +12,9 @@ namespace ShitpostTron5000
         }
         public DbSet<ExpanderChannel> ExpanderChannels { get; set; }
         public DbSet<DbTest> Tests { get; set; }
+
+        public DbSet<MessageArchiveEntry> MessageArchive { get; set; }
+
     }
 
      class DbTest
