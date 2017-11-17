@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -12,6 +13,8 @@ namespace ShitpostTron5000
         static CommandsNextModule _commands;
         public static DateTime Start;
         public static DbSet<ExpanderChannel> ExpanderChannels;
+        public static List<Archiver> Archivers;
+        public static ShitpostTronContext ShitpostTronContext;
 
 
         static void Main(string[] args)
@@ -35,13 +38,17 @@ namespace ShitpostTron5000
                 UseInternalLogHandler = true
             });
             
-            ShitpostTronContext db = new ShitpostTronContext();
-            ExpanderChannels = db.ExpanderChannels;
-            ExpanderChannels.Local.CollectionChanged += async (sender, eventArgs) => { await db.SaveChangesAsync(); };
+            ShitpostTronContext = new ShitpostTronContext();
+            ExpanderChannels = ShitpostTronContext.ExpanderChannels;
+            ExpanderChannels.Local.CollectionChanged += async (sender, eventArgs) => { await ShitpostTronContext.SaveChangesAsync(); };
             foreach (ExpanderChannel expanderChannel in ExpanderChannels)
             {
                Client.VoiceStateUpdated+= expanderChannel.OnChannelUpdate;
             }
+            Archiver archie = new Archiver();
+            Client.MessageCreated += archie.OnMessageCreated;
+
+            Archivers = new List<Archiver>() {  };
         }
         
 

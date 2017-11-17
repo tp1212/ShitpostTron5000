@@ -33,6 +33,20 @@ namespace ShitpostTron5000
             await ctx.RespondAsync(text);
             Console.WriteLine($"I had to say {text}");
         }
+        [Command("Archive")]
+        [Description("Start archiving a channel.")]
+        public async Task Archive(CommandContext ctx, DiscordChannel channel)
+        {
+
+            Archiver archy = new Archiver();
+            archy.Guild = ctx.Guild;
+            
+
+            await ctx.RespondAsync($"Okay, I will start archiving {channel.Name}");
+            
+        }
+
+
 
         //[Command("roll")]
         //public async Task Roll(CommandContext ctx, int dice, int dicen)

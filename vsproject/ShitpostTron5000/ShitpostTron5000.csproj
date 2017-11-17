@@ -72,18 +72,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Archiver.cs" />
     <Compile Include="MessageArchiveEntries.cs" />
     <Compile Include="BasicCommands.cs" />
     <Compile Include="DiscordEntityGetterBase.cs" />
     <Compile Include="ExpanderChannel.cs" />
-    <Compile Include="Migrations\201711161453371_init.cs" />
-    <Compile Include="Migrations\201711161453371_init.Designer.cs">
-      <DependentUpon>201711161453371_init.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201711161504418_messageachrive.cs" />
-    <Compile Include="Migrations\201711161504418_messageachrive.Designer.cs">
-      <DependentUpon>201711161504418_messageachrive.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="ShitpostTronContext.cs" />
     <Compile Include="Program.cs" />
@@ -93,14 +86,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201711161453371_init.resx">
-      <DependentUpon>201711161453371_init.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711161504418_messageachrive.resx">
-      <DependentUpon>201711161504418_messageachrive.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -45,11 +45,11 @@ namespace ShitpostTron5000
             try
             {
 
-            if (e.Guild != await Guild.GetDiscordEntity()) 
+            if (e.Guild != await Guild.GetDiscordEntityAsync()) 
                 return;//not my problem
-            if (e.Channel?.Parent != await Category.GetDiscordEntity())
+            if (e.Channel?.Parent != await Category.GetDiscordEntityAsync())
                 return;//also my problem
-            if (await Category.GetDiscordEntity() == null)//somethings wrong.
+            if (await Category.GetDiscordEntityAsync() == null)//somethings wrong.
                 return;
 
 
@@ -63,9 +63,9 @@ namespace ShitpostTron5000
                 _isUpdating = true; //prevent other tasks from stomping over my changes.
             }
 
-                List<DiscordMember> members =  (await Guild.GetDiscordEntity()).Members.ToList();
+                List<DiscordMember> members =  (await Guild.GetDiscordEntityAsync()).Members.ToList();
                
-                List<DiscordChannel> expanderChannels = (await Category.GetDiscordEntity()).Children.ToList();
+                List<DiscordChannel> expanderChannels = (await Category.GetDiscordEntityAsync()).Children.ToList();
                 IEnumerable<DiscordChannel> empty =
                     expanderChannels.Where(x => members.All(u => u.VoiceState?.Channel != x))
                         .ToList(); //find empty channels
@@ -73,8 +73,8 @@ namespace ShitpostTron5000
                 if (!empty.Any()) //all channels full
                 {
                     //add new channel
-                    await (await Guild.GetDiscordEntity()).CreateChannelAsync(BaseName + (expanderChannels.Count + 1), ChannelType.Voice,
-                        (await Category.GetDiscordEntity()));
+                    await (await Guild.GetDiscordEntityAsync()).CreateChannelAsync(BaseName + (expanderChannels.Count + 1), ChannelType.Voice,
+                        (await Category.GetDiscordEntityAsync()));
                 }
 
                 foreach (DiscordChannel discordChannel in empty.Skip(1)) //some channels are empty. 

@@ -12,7 +12,8 @@ namespace ShitpostTron5000
         public DiscordMessageGetter CurrentMessage;
         public MessageArchiveEntry PreviousVersion { get; set; }
 
-
+        public string Content { get; set; }
+        public string UserName { get; set; }
 
 
     }
