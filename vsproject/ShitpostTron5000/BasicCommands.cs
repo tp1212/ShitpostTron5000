@@ -33,16 +33,21 @@ namespace ShitpostTron5000
             await ctx.RespondAsync(text);
             Console.WriteLine($"I had to say {text}");
         }
-        [Command("Archive")]
-        [Description("Start archiving a channel.")]
-        public async Task Archive(CommandContext ctx, DiscordChannel channel)
+        [Command("orwell")]
+        [Description("Start storing a servers messages.")]
+        public async Task Archive(CommandContext ctx)
         {
+            if (Program.ShitpostTronContext.OrwellainStateSurveyors.Any(x => x.Guild.SnowFlakeLong == (long)ctx.Guild.Id))
+            {
 
-            Archiver archy = new Archiver();
-            archy.Guild = ctx.Guild;
-            
+                await ctx.RespondAsync($"I am already performing intrusive state surveilance on {ctx.Guild}.");
+                return;
+            }
+            BigBrother archy = new BigBrother();
+            archy.Guild = (DiscordGuildGetter) ctx.Guild;
+            Program.ShitpostTronContext.OrwellainStateSurveyors.Add(archy);
 
-            await ctx.RespondAsync($"Okay, I will start archiving {channel.Name}");
+            await ctx.RespondAsync($"Okay, I will start performing state surveilance on {ctx.Guild}.");
             
         }
 
@@ -221,7 +226,7 @@ namespace ShitpostTron5000
         {
             ExpanderChannel exp = await ExpanderChannel.BuildExpanderChannel(ctx.Guild,name,category);
             Program.Client.VoiceStateUpdated += exp.OnChannelUpdate;
-            Program.ExpanderChannels.Add(exp);
+            Program.ShitpostTronContext.ExpanderChannels.Add(exp);
 
         }
     }

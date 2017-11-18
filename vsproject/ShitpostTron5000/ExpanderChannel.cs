@@ -16,10 +16,11 @@ namespace ShitpostTron5000
       
         
 
-        [Key]
+        
         public int Id { get; set; }
 
         public DiscordChannelGetter Category { get; set; }
+
         public DiscordGuildGetter Guild { get; set; }
 
         public string BaseName { get; set; }
@@ -31,6 +32,10 @@ namespace ShitpostTron5000
             DiscordChannel first = await targetServer.CreateChannelAsync(channelname + 1, ChannelType.Voice, cat);
          
             return new ExpanderChannel(targetServer,channelname,cat);
+        }
+
+        public ExpanderChannel()
+        {
         }
 
         public ExpanderChannel(DiscordGuild targetGuild, string baseName, DiscordChannel category)

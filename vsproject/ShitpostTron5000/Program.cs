@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -12,8 +13,6 @@ namespace ShitpostTron5000
         public static DiscordClient Client;
         static CommandsNextModule _commands;
         public static DateTime Start;
-        public static DbSet<ExpanderChannel> ExpanderChannels;
-        public static List<Archiver> Archivers;
         public static ShitpostTronContext ShitpostTronContext;
 
 
@@ -25,7 +24,7 @@ namespace ShitpostTron5000
             while (true)
             {
                string msg = Console.ReadLine();
-                Client.SendMessageAsync( Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), msg);
+               Client.SendMessageAsync( Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), msg);
             }
         }
 
@@ -39,16 +38,24 @@ namespace ShitpostTron5000
             });
             
             ShitpostTronContext = new ShitpostTronContext();
-            ExpanderChannels = ShitpostTronContext.ExpanderChannels;
-            ExpanderChannels.Local.CollectionChanged += async (sender, eventArgs) => { await ShitpostTronContext.SaveChangesAsync(); };
-            foreach (ExpanderChannel expanderChannel in ExpanderChannels)
+            
+         
+
+            async void AutoSave(object sender, NotifyCollectionChangedEventArgs eventArgs)
+            {
+                await ShitpostTronContext.SaveChangesAsync();
+            }
+
+            ShitpostTronContext.ExpanderChannels.Local.CollectionChanged += AutoSave;
+            ShitpostTronContext.OrwellainStateSurveyors.Local.CollectionChanged += AutoSave;
+            ShitpostTronContext.MessageArchive.Local.CollectionChanged += AutoSave;
+
+            foreach (ExpanderChannel expanderChannel in ShitpostTronContext.ExpanderChannels)
             {
                Client.VoiceStateUpdated+= expanderChannel.OnChannelUpdate;
             }
-            Archiver archie = new Archiver();
-            Client.MessageCreated += archie.OnMessageCreated;
 
-            Archivers = new List<Archiver>() {  };
+          
         }
         
 

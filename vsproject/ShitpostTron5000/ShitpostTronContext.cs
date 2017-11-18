@@ -12,6 +12,6 @@ namespace ShitpostTron5000
         }
         public DbSet<ExpanderChannel> ExpanderChannels { get; set; }
         public DbSet<MessageArchiveEntry> MessageArchive { get; set; }
-
+        public DbSet<BigBrother> OrwellainStateSurveyors { get; set; }
     }
 }

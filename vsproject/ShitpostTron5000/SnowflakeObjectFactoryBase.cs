@@ -65,10 +65,10 @@ namespace ShitpostTron5000
 
     public class DiscordGuildGetter : DiscordEntityGetterBase<DiscordGuild>
     {
-        DiscordGuildGetter()
+        public DiscordGuildGetter()
         {
         }
-        DiscordGuildGetter(DiscordGuild other) : base(other)
+        public DiscordGuildGetter(DiscordGuild other) : base(other)
         {
         }
 
@@ -78,7 +78,7 @@ namespace ShitpostTron5000
           return await Program.Client.GetGuildAsync(SnowFlake);
         }
 
-        public static implicit operator DiscordGuildGetter(DiscordGuild other)
+        public static explicit operator DiscordGuildGetter(DiscordGuild other)
         {
             return new DiscordGuildGetter(other){SnowFlake = other.Id};
         }
@@ -88,19 +88,48 @@ namespace ShitpostTron5000
 
     public class DiscordChannelGetter : DiscordEntityGetterBase<DiscordChannel>
     {
+
+        public DiscordChannelGetter()
+        {
+        }
+
+        public DiscordChannelGetter(DiscordChannel cnl) : base(cnl)
+        {
+        }
+
         protected override async Task<DiscordChannel> GetDiscordEntityInternal()
         {
           return await Program.Client.GetChannelAsync(SnowFlake);
+        }
+
+        public static explicit operator DiscordChannelGetter(DiscordChannel other)
+        {
+            return new DiscordChannelGetter(other) { SnowFlake = other.Id };
         }
     }
 
     public class DiscordMessageGetter : DiscordEntityGetterBase<DiscordMessage>
     {
+        public DiscordMessageGetter()
+        {
+        }
+
+        public DiscordMessageGetter(DiscordMessage msg ) : base(msg)
+        {
+            Channel = (DiscordChannelGetter) msg.Channel;
+        }
+
+        [Required]
         public DiscordChannelGetter Channel { get; set; }
         
         protected override async Task<DiscordMessage> GetDiscordEntityInternal()
         {
             return await (await Channel.GetDiscordEntityAsync()).GetMessageAsync(SnowFlake);
+        }
+
+        public static explicit operator DiscordMessageGetter(DiscordMessage other)
+        {
+            return new DiscordMessageGetter(other) { SnowFlake = other.Id };
         }
     }
 
