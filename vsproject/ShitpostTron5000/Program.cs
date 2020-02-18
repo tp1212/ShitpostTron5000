@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Data.Entity;
+
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -20,11 +20,11 @@ namespace ShitpostTron5000
         {
             Start = DateTime.Now;
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
-           
+
             while (true)
             {
-               string msg = Console.ReadLine();
-               Client.SendMessageAsync( Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), msg);
+                string msg = Console.ReadLine();
+                Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), msg);
             }
         }
 
@@ -36,75 +36,58 @@ namespace ShitpostTron5000
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true
             });
-            
+
             ShitpostTronContext = new ShitpostTronContext();
-            
-         
 
-            async void AutoSave(object sender, NotifyCollectionChangedEventArgs eventArgs)
-            {
-                await ShitpostTronContext.SaveChangesAsync();
-            }
-
-            ShitpostTronContext.ExpanderChannels.Local.CollectionChanged += AutoSave;
-            ShitpostTronContext.OrwellainStateSurveyors.Local.CollectionChanged += AutoSave;
-            ShitpostTronContext.MessageArchive.Local.CollectionChanged += AutoSave;
-
-            foreach (ExpanderChannel expanderChannel in ShitpostTronContext.ExpanderChannels)
-            {
-               Client.VoiceStateUpdated+= expanderChannel.OnChannelUpdate;
-            }
-
-          
         }
-        
 
-            static async Task MainAsync(string[] args)
-            {
 
-                await init(args);
-            
-             _commands = Client.UseCommandsNext(new CommandsNextConfiguration
+        static async Task MainAsync(string[] args)
+        {
+
+            await init(args);
+
+            _commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefix = "!"
             });
             _commands.RegisterCommands<BasicCommands>();
-                Client.ClientErrored += async e =>
+            Client.ClientErrored += async e =>
+            {
+
+                Console.WriteLine(e.Exception.ToString());
+                if (e.Exception.InnerException != null)
                 {
-                   
-                    Console.WriteLine(e.Exception.ToString());
-                    if (e.Exception.InnerException != null)
-                    {
-                        
-                    }
-                };
+
+                }
+            };
 
 
             _commands.CommandErrored += async e =>
             {
-               Console.WriteLine(  e.Exception.ToString());
-            };
-           
-            Client.MessageCreated += async e =>
-            {
-                if(e.Channel.Name == "devtrons")
-                if (e.Message.Content.ToLower().StartsWith("ping"))
-                    await e.Message.RespondAsync("pong!");
+                Console.WriteLine(e.Exception.ToString());
             };
 
-          
+            Client.MessageCreated += async e =>
+            {
+                if (e.Channel.Name == "devtrons")
+                    if (e.Message.Content.ToLower().StartsWith("ping"))
+                        await e.Message.RespondAsync("pong!");
+            };
+
+
             Client.VoiceStateUpdated += async e =>
             {
-                
+
                 //await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
             };
 
-            
 
-            
+
+
 
             await Client.ConnectAsync();
-           
+
         }
     }
 }

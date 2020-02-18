@@ -33,41 +33,10 @@ namespace ShitpostTron5000
             await ctx.RespondAsync(text);
             Console.WriteLine($"I had to say {text}");
         }
-        [Command("orwell")]
-        [Description("Start storing a servers messages.")]
-        public async Task Archive(CommandContext ctx)
-        {
-            if (Program.ShitpostTronContext.OrwellainStateSurveyors.Any(x => x.Guild.SnowFlakeLong == (long)ctx.Guild.Id))
-            {
-
-                await ctx.RespondAsync($"I am already performing intrusive state surveilance on {ctx.Guild}.");
-                return;
-            }
-            BigBrother archy = new BigBrother();
-            archy.Guild = (DiscordGuildGetter) ctx.Guild;
-            Program.ShitpostTronContext.OrwellainStateSurveyors.Add(archy);
-
-            await ctx.RespondAsync($"Okay, I will start performing state surveilance on {ctx.Guild}.");
-            
-        }
 
 
 
-        //[Command("roll")]
-        //public async Task Roll(CommandContext ctx, int dice, int dicen)
-        //{
-        //    StringBuilder response = new StringBuilder();
-        //    response.Append($"Rolling {dice} d{dicen}ns\n");
-        //    response.Append("Your rolls are:```\n");
-        //    for (int i = 1; i < dice + 1; i++)
-        //    {
-        //        response.Append($"{i}:{_rand.Next(0, dicen)}\t");
-        //        if (i % 10 == 0) response.Append($"\n");
-        //    }
-        //    response.Append("```");
-        //    await ctx.RespondAsync(response.ToString());
-        //    Console.WriteLine($"I had to roll dice.");
-        //}
+
 
         [Command("roll")][Description("roll some dice, example: !roll 10d5 3d4-2")]
         public async Task Roll(CommandContext ctx,[Description("#d#[(+|-)#]")] params string[] dicestrings)
@@ -208,26 +177,7 @@ namespace ShitpostTron5000
         {
             await user.ModifyAsync(null, null, null, null, target, "for the lulz.");
         }
-        [Command("mscount")]
-        public async Task Delete(CommandContext ctx, DiscordUser user, DiscordChannel where)
-        {
+  
 
-           IReadOnlyList<DiscordMessage> msggs = await where.GetMessagesAsync(100,where.LastMessageId);
-           int c =  msggs.Count(x => x.Author.Id == user.Id);
-            StringBuilder response = new StringBuilder();
-            response.Append($"Of the last 100 posts in {where.Name}\n");
-            response.Append($"{c} were posted by {user.Username}\n");
-            await ctx.RespondAsync(response.ToString());
-         
-        }
-
-        [Command("expanderchannel")]
-        public async Task CreateExpanderChannel(CommandContext ctx, string name, string category)
-        {
-            ExpanderChannel exp = await ExpanderChannel.BuildExpanderChannel(ctx.Guild,name,category);
-            Program.Client.VoiceStateUpdated += exp.OnChannelUpdate;
-            Program.ShitpostTronContext.ExpanderChannels.Add(exp);
-
-        }
     }
 }

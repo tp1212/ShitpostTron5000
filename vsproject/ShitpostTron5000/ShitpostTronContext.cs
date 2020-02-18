@@ -1,17 +1,22 @@
-﻿using System.Data.Entity;
-using MySql.Data.Entity;
+﻿
+using Microsoft.EntityFrameworkCore;
+using ShitpostTron5000.Data;
 
 namespace ShitpostTron5000
 {
-    [DbConfigurationType(typeof(MySqlEFConfiguration))]
     class ShitpostTronContext : DbContext
     {
-        public ShitpostTronContext() 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            
+            optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=ShitPostTron;Integrated Security=True;");
+            base.OnConfiguring(optionsBuilder);
         }
-        public DbSet<ExpanderChannel> ExpanderChannels { get; set; }
-        public DbSet<MessageArchiveEntry> MessageArchive { get; set; }
-        public DbSet<BigBrother> OrwellainStateSurveyors { get; set; }
+
+        public ShitpostTronContext()
+        {
+        }
+
+        public DbSet<Quote> Quotes { get; set; }
+
     }
 }
