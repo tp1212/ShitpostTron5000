@@ -35,7 +35,7 @@ namespace ShitpostTron5000
 
 
             IConfigurationBuilder builder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile("appsettings.json",optional:true)
                 .AddEnvironmentVariables();
 
             var Configuration = builder.Build();
