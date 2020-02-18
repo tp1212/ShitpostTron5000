@@ -4,13 +4,15 @@ using ShitpostTron5000.Data;
 
 namespace ShitpostTron5000
 {
-    class ShitpostTronContext : DbContext
+    public class ShitpostTronContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+
+
+        public ShitpostTronContext(DbContextOptions<ShitpostTronContext> context) :base(context)
         {
-            optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=ShitPostTron;Integrated Security=True;");
-            base.OnConfiguring(optionsBuilder);
+        
         }
+
 
         public ShitpostTronContext()
         {

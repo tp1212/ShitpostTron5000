@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ShitpostTron5000.Data
 {
-    class Quote
+    public class Quote
     {
         
 

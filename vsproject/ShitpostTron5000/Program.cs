@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace ShitpostTron5000
@@ -45,8 +46,9 @@ namespace ShitpostTron5000
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true
             });
-
-            ShitpostTronContext = new ShitpostTronContext();
+            var optionsBuilder = new DbContextOptionsBuilder<ShitpostTronContext>();
+            optionsBuilder.UseSqlServer(Configuration["ShitpostTronDB"]);
+            ShitpostTronContext = new ShitpostTronContext(optionsBuilder.Options);
 
         }
 
