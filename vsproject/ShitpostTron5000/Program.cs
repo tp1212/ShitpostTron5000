@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using Microsoft.Extensions.Configuration;
 
 namespace ShitpostTron5000
 {
@@ -30,9 +31,17 @@ namespace ShitpostTron5000
 
         static async Task init(string[] args)
         {
+
+
+            IConfigurationBuilder builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .AddEnvironmentVariables();
+
+            var Configuration = builder.Build();
+
             Client = new DiscordClient(new DiscordConfiguration
             {
-                Token = Token.TokenStr,
+                Token = Configuration["TokenString"],
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true
             });
