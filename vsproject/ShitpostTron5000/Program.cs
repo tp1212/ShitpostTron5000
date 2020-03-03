@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -46,9 +47,13 @@ namespace ShitpostTron5000
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true
             });
+            Client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5)});
+
+
+
             var optionsBuilder = new DbContextOptionsBuilder<ShitpostTronContext>();
-            optionsBuilder.UseSqlServer(Configuration["ShitpostTronDB"]);
-            ShitpostTronContext = new ShitpostTronContext(optionsBuilder.Options);
+           // optionsBuilder.UseSqlServer(Configuration["ShitpostTronDB"]);
+           // ShitpostTronContext = new ShitpostTronContext(optionsBuilder.Options);
 
         }
 

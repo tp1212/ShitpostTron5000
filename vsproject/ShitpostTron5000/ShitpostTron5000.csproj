@@ -8,6 +8,14 @@
     <Compile Remove="Migrations\20200218171216_initial.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Assets\avatar.png" />
+    <None Remove="Assets\ratava.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\ratava.png" />
+    <EmbeddedResource Include="Assets\avatar.png" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="DSharpPlus" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="3.2.3" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="3.2.3" />

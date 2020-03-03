@@ -10,6 +10,7 @@ namespace ShitpostTron5000.Data
 
         public int Id { get; set; }
         public string QuoteText { get; set; }
+        public int Quoted { get; set; }
 
 
     }
