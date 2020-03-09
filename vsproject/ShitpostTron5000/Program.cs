@@ -8,6 +8,8 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ShitpostTron5000.CommandsModules;
+using ShitpostTron5000.Data;
 
 namespace ShitpostTron5000
 {
@@ -16,7 +18,6 @@ namespace ShitpostTron5000
         public static DiscordClient Client;
         static CommandsNextModule _commands;
         public static DateTime Start;
-        public static ShitpostTronContext ShitpostTronContext;
 
 
         static void Main(string[] args)
@@ -33,8 +34,6 @@ namespace ShitpostTron5000
 
         static async Task init(string[] args)
         {
-
-
             IConfigurationBuilder builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json",optional:true)
                 .AddEnvironmentVariables();
@@ -48,13 +47,6 @@ namespace ShitpostTron5000
                 UseInternalLogHandler = true
             });
             Client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5)});
-
-
-
-            var optionsBuilder = new DbContextOptionsBuilder<ShitpostTronContext>();
-           // optionsBuilder.UseSqlServer(Configuration["ShitpostTronDB"]);
-           // ShitpostTronContext = new ShitpostTronContext(optionsBuilder.Options);
-
         }
 
 
@@ -68,6 +60,8 @@ namespace ShitpostTron5000
                 StringPrefix = "!"
             });
             _commands.RegisterCommands<BasicCommands>();
+            _commands.RegisterCommands<Timers>();
+
             Client.ClientErrored += async e =>
             {
 
