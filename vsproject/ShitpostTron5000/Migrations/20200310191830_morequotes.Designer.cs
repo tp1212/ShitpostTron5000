@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShitpostTron5000;
 
 namespace ShitpostTron5000.Migrations
 {
     [DbContext(typeof(ShitpostTronContext))]
-    partial class ShitpostTronContextModelSnapshot : ModelSnapshot
+    [Migration("20200310191830_morequotes")]
+    partial class morequotes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -17,6 +17,7 @@ namespace ShitpostTron5000
     class BasicCommands
     {
         private static Random _rand = new Random();
+        private readonly QuoteDB QuoteDB = new QuoteDB();
 
         [Command("stop")]
         [Hidden]
@@ -84,45 +85,6 @@ namespace ShitpostTron5000
             }
         }
 
-        [Command("addquote")]
-        public async Task QuoteFromUser(CommandContext ctx, DiscordMember qotee)
-        {
-            var candidates = await ctx.Channel.GetMessagesAsync(20);
-            string quote = candidates.LastOrDefault(x => x.Author == qotee).Content;
-            if (quote == null)
-            {
-                await ctx.RespondAsync("I cant find a recent message by that user.");
-                return;
-            }
-
-            var inter = Program.Client.GetInteractivityModule();
-
-            await ctx.RespondAsync($"I found this:{quote}\nWant me to add it to the quote DB?");
-
-            var choice = await inter.WaitForReactionAsync(x =>
-            {
-                return x.Name.Contains("yes", StringComparison.OrdinalIgnoreCase)
-                || x.Name.Contains("no", StringComparison.OrdinalIgnoreCase);
-
-            }, ctx.User);
-
-            if (choice.Emoji.Name.Contains("yes", StringComparison.OrdinalIgnoreCase))
-            {
-                await ctx.RespondAsync("I would, but my creator is a lazy bum and hasnt finished that yet.");
-
-            }
-            else
-            {
-                await ctx.RespondAsync("Okay, then I wont. make up your mind, sheesh.");
-            }
-        }
-
-        //[Command("addquote")]
-        //public async Task QuoteFromText(CommandContext ctx, [RemainingText][Description("The message you want to say")]string text)
-        //{
-        //    await ctx.RespondAsync(text);
-        //    Console.WriteLine($"I had to say {text}");
-        //}
 
         [Command("freud")]
         [Hidden]

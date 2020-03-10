@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShitpostTron5000;
 
 namespace ShitpostTron5000.Migrations
 {
     [DbContext(typeof(ShitpostTronContext))]
-    partial class ShitpostTronContextModelSnapshot : ModelSnapshot
+    [Migration("20200310180245_test")]
+    partial class test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,17 +28,11 @@ namespace ShitpostTron5000.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<decimal>("DiscordSnowFlake")
-                        .HasColumnType("decimal(20,0)");
-
-                    b.Property<decimal>("QouteeDiscordSnoflake")
-                        .HasColumnType("decimal(20,0)");
-
                     b.Property<string>("QuoteText")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("QuoteeName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Quoted")
+                        .HasColumnType("decimal(20,0)");
 
                     b.HasKey("Id");
 

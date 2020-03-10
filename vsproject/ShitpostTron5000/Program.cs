@@ -8,22 +8,48 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.WindowsAzure.Storage;
+using Serilog;
 using ShitpostTron5000.CommandsModules;
 using ShitpostTron5000.Data;
 
 namespace ShitpostTron5000
 {
+
+    public class StartUp
+    {
+
+    }
+
     class Program
     {
         public static DiscordClient Client;
         static CommandsNextModule _commands;
         public static DateTime Start;
 
+        public static IConfigurationRoot Config;
+
+        public static ShitpostTronContext GetDbContext()
+        {
+            return new ShitpostTronContext(new DbContextOptionsBuilder<ShitpostTronContext>()
+                .UseSqlServer(Config["ShitpostTronDB"])
+                .Options);
+        }
+
 
         static void Main(string[] args)
         {
             Start = DateTime.Now;
-            MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
+            try
+            {
+                MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal("Main died",ex);
+                throw;
+            }
+     
 
             while (true)
             {
@@ -32,28 +58,43 @@ namespace ShitpostTron5000
             }
         }
 
-        static async Task init(string[] args)
+        static async Task Init(string[] args)
         {
-            IConfigurationBuilder builder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json",optional:true)
-                .AddEnvironmentVariables();
+            Config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
 
-            var Configuration = builder.Build();
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.Debug()
+                .WriteTo.AzureTableStorage(
+                    CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=shitposttronstorage;AccountKey=usqGBGKzJ0b8hAo3joCHNr2j1IfiWaTeFzkBBsPEjh/RCOuN+fRuAH+G/pIc/IvYwOK9CqZjyC1hF3GAs7BgFQ==;EndpointSuffix=core.windows.net")
+                , storageTableName: "Complaints"
+                    ).CreateLogger();
+
+            Log.Information("Initializing.");
+
+
+
+            await GetDbContext().Database.MigrateAsync();
+
+  
 
             Client = new DiscordClient(new DiscordConfiguration
             {
-                Token = Configuration["TokenString"],
+                Token = Config["TokenString"],
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = true
             });
-            Client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5)});
+            Client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5) });
         }
 
 
         static async Task MainAsync(string[] args)
         {
-
-            await init(args);
+            await Init(args);
 
             _commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
@@ -61,21 +102,20 @@ namespace ShitpostTron5000
             });
             _commands.RegisterCommands<BasicCommands>();
             _commands.RegisterCommands<Timers>();
+            _commands.RegisterCommands<QuoteDB>();
 
-            Client.ClientErrored += async e =>
+            Client.ClientErrored += async ex =>
             {
+               Log.Logger.Error("Client Error",ex.Exception);
 
-                Console.WriteLine(e.Exception.ToString());
-                if (e.Exception.InnerException != null)
-                {
-
-                }
             };
 
+            _commands.CommandExecuted += async eventArgs =>
+                Log.Logger.Information($"Executed Command {eventArgs.Command} for {eventArgs.Context.User}");
 
-            _commands.CommandErrored += async e =>
+            _commands.CommandErrored += async ex =>
             {
-                Console.WriteLine(e.Exception.ToString());
+                Log.Logger.Error("Command Error", ex.Exception);
             };
 
             Client.MessageCreated += async e =>
