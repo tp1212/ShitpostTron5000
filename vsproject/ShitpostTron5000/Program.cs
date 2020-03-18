@@ -98,7 +98,8 @@ namespace ShitpostTron5000
 
             _commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefix = "!"
+                StringPrefix = "!",
+                CaseSensitive = false
             });
             _commands.RegisterCommands<BasicCommands>();
             _commands.RegisterCommands<Timers>();

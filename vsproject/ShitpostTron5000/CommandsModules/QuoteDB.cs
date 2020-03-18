@@ -14,7 +14,7 @@ namespace ShitpostTron5000
     class QuoteDB
     {
 
-        [Command("randomQuote")]
+        [Command("QuoteRandom")][Description("Get a quote at random, yay.")]
         public async Task GetRandomQuote(CommandContext ctx)
         {
             ShitpostTronContext db = Program.GetDbContext();
@@ -26,7 +26,7 @@ namespace ShitpostTron5000
             await SayQuote(ctx, db, quoteNumber);
         }
 
-        [Command("Quote")]
+        [Command("Quote")][Description("Get a quote by number, yay.")]
         public async Task GetQuote(CommandContext ctx, int number)
         {
             ShitpostTronContext db = Program.GetDbContext();
@@ -48,7 +48,8 @@ namespace ShitpostTron5000
         }
 
 
-        [Command("quoteManual")]
+        [Command("QuoteManual")]
+        [Description("Manually add a quote, like for when you hear something\n eg !quoteManual @Steve Funny words go here.")]
         public async Task QuoteFromUser(CommandContext ctx, DiscordMember attribute, [RemainingText]string Content)
         {
             var inter = Program.Client.GetInteractivityModule();
@@ -119,7 +120,7 @@ namespace ShitpostTron5000
             }
         }
 
-        [Command("quoteChat")]
+        [Command("QuoteChat")]
         public async Task QuoteChat(CommandContext ctx, DiscordMember qotee, int skip = 0)
         {
             var candidates = await ctx.Channel.GetMessagesAsync(50);
