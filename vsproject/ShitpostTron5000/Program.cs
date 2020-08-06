@@ -108,7 +108,6 @@ namespace ShitpostTron5000
             Client.ClientErrored += async ex =>
             {
                Log.Logger.Error("Client Error",ex.Exception);
-
             };
 
             _commands.CommandExecuted += async eventArgs =>
@@ -129,16 +128,10 @@ namespace ShitpostTron5000
 
             Client.VoiceStateUpdated += async e =>
             {
-
                 //await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
             };
 
-
-
-
-
             await Client.ConnectAsync();
-
         }
     }
 }

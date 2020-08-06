@@ -21,5 +21,6 @@ namespace ShitpostTron5000
         public DbSet<Quote> Quotes { get; set; }
         public DbSet<Timer> Timers { get; set; }
 
+
     }
 }

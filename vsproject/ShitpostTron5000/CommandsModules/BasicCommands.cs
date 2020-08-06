@@ -36,6 +36,12 @@ namespace ShitpostTron5000
         [Description("Make me bot say a thing.")]
         public async Task Say(CommandContext ctx, [RemainingText][Description("The message you want to say")]string text)
         {
+            try
+            {
+                await ctx.Message.DeleteAsync();
+            }
+            catch 
+            { }
             await ctx.RespondAsync(text);
             Console.WriteLine($"I had to say {text}");
         }
@@ -252,9 +258,6 @@ namespace ShitpostTron5000
                 response.Append($"{chanl.Name}:{chanl.Id} NSFW:{(chanl.IsNSFW ? "YES" : "NO")}\n");
             }
             response.Append("```");
-
-
-
 
             await ctx.RespondAsync(response.ToString());
             Console.WriteLine($"I gave a status update.");

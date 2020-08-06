@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -13,7 +14,6 @@ namespace ShitpostTron5000
 {
     class QuoteDB
     {
-
         [Command("QuoteRandom")][Description("Get a quote at random, yay.")]
         public async Task GetRandomQuote(CommandContext ctx)
         {
@@ -35,7 +35,19 @@ namespace ShitpostTron5000
 
             await SayQuote(ctx, db, number);
         }
+        
+        [Command("QuoteBrowser")]
+        [Description("Get a quote by number, yay.")]
+        public async Task GetPaginatedQuote(CommandContext ctx, int number = 1)
+        {
+            ShitpostTronContext db = Program.GetDbContext();
+            var inter = Program.Client.GetInteractivityModule();
+            
+            await inter.SendPaginatedMessage(ctx.Channel, ctx.User,
+                db.Quotes.Select(x => new Page{Content = QuoteToString(x)}));
 
+        }
+        
         private static async Task SayQuote(CommandContext ctx, ShitpostTronContext db, int quoteNumber)
         {
             var result = db.Quotes.FirstOrDefault(x => x.Id == quoteNumber);
@@ -44,7 +56,12 @@ namespace ShitpostTron5000
                 ctx.RespondAsync($"Could not find quote #{quoteNumber}");
             }
 
-            await ctx.RespondAsync($"{result.QuoteText.Replace("\n", "\n> ")} \n―{result.QuoteeName} \t#{quoteNumber}");
+            await ctx.RespondAsync(QuoteToString(result));
+        }
+
+        private static string QuoteToString( Quote result)
+        {
+            return $"{result.QuoteText.Replace("\n", "\n> ")} \n―{result.QuoteeName} \t#{result.Id}";
         }
 
 
@@ -65,10 +82,8 @@ namespace ShitpostTron5000
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("❎"));
 
-            var choice = await inter.WaitForReactionAsync(x => x.Name.Contains("✅",
-                                                                   StringComparison.OrdinalIgnoreCase) ||
-                                                               x.Name.Contains("❎",
-                                                                   StringComparison.OrdinalIgnoreCase),
+            var choice = await inter.WaitForReactionAsync(x => x.Name.Contains("✅", StringComparison.OrdinalIgnoreCase) 
+                                                               || x.Name.Contains("❎", StringComparison.OrdinalIgnoreCase),
                 ctx.User);
 
             try
@@ -79,8 +94,7 @@ namespace ShitpostTron5000
             {
                 Log.Warning("did not clean reactons", ex);
             }
-
-
+            
             if (choice.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase))
             {
                 await message.ModifyAsync("Working.");

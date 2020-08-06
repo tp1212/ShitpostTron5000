@@ -72,7 +72,7 @@ namespace ShitpostTron5000.CommandsModules
                 "stop" => $"{MemberMentionOrName(ctx)}, not stoppin.",
                 "win" => $"{MemberMentionOrName(ctx)} gets no prizes.",
                 null => TimerResponses.OrderBy(x => Guid.NewGuid()).First()(ctx), //lazy way to pick one at random.
-                string y => NamedTimerResponses.OrderBy(x => Guid.NewGuid()).First()(ctx, name)
+                { } y => NamedTimerResponses.OrderBy(x => Guid.NewGuid()).First()(ctx, name)
             }
             );
         }
