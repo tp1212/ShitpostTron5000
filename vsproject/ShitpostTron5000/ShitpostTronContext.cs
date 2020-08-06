@@ -8,7 +8,7 @@ namespace ShitpostTron5000
     {
 
 
-        public ShitpostTronContext(DbContextOptions<ShitpostTronContext> context) :base(context)
+        public ShitpostTronContext(DbContextOptions<ShitpostTronContext> context) : base(context)
         {
         
         }

@@ -11,6 +11,6 @@ namespace ShitpostTron5000.Data
         public string QuoteText { get; set; }
         public ulong DiscordSnowFlake { get; set; }
         public string QuoteeName { get; set; }
-        public ulong QouteeDiscordSnoflake { get; set; }
+        public ulong QouteeDiscordSnowflake { get; set; }
     }
 }

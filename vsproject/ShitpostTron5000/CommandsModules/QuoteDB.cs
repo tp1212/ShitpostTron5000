@@ -104,7 +104,7 @@ namespace ShitpostTron5000.CommandsModules
                     DiscordSnowFlake = 0,
                     QuoteText = Content,
                     QuoteeName = attributeToName,
-                    QouteeDiscordSnoflake = attributeToMember.Id,
+                    QouteeDiscordSnowflake = attributeToMember.Id,
 
                 };
                 db.Add(q);
@@ -178,7 +178,7 @@ namespace ShitpostTron5000.CommandsModules
                     DiscordSnowFlake = targetMsg.Id,
                     QuoteText = targetMsg.Content,
                     QuoteeName = targetMsg.Author.Username,
-                    QouteeDiscordSnoflake = targetMsg.Author.Id,
+                    QouteeDiscordSnowflake = targetMsg.Author.Id,
 
                 };
                 db.Add(q);
