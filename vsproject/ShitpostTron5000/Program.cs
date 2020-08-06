@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -11,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.WindowsAzure.Storage;
 using Serilog;
 using ShitpostTron5000.CommandsModules;
-using ShitpostTron5000.Data;
 
 namespace ShitpostTron5000
 {
@@ -76,11 +72,7 @@ namespace ShitpostTron5000
 
             Log.Information("Initializing.");
 
-
-
             await GetDbContext().Database.MigrateAsync();
-
-  
 
             Client = new DiscordClient(new DiscordConfiguration
             {
@@ -124,7 +116,6 @@ namespace ShitpostTron5000
                     if (e.Message.Content.ToLower().StartsWith("ping"))
                         await e.Message.RespondAsync("pong!");
             };
-
 
             Client.VoiceStateUpdated += async e =>
             {

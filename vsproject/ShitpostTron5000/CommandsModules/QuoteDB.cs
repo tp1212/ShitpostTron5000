@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -10,9 +9,9 @@ using DSharpPlus.Interactivity;
 using Serilog;
 using ShitpostTron5000.Data;
 
-namespace ShitpostTron5000
+namespace ShitpostTron5000.CommandsModules
 {
-    class QuoteDB
+    public class QuoteDB
     {
         [Command("QuoteRandom")][Description("Get a quote at random, yay.")]
         public async Task GetRandomQuote(CommandContext ctx)
@@ -67,17 +66,17 @@ namespace ShitpostTron5000
 
         [Command("QuoteManual")]
         [Description("Manually add a quote, like for when you hear something\n eg !quoteManual @Steve Funny words go here.")]
-        public async Task QuoteFromUser(CommandContext ctx, DiscordMember attribute, [RemainingText]string Content)
+        public async Task QuoteFromUser(CommandContext ctx, DiscordMember attributeToMember, [RemainingText]string Content)
         {
             var inter = Program.Client.GetInteractivityModule();
 
-            var attribName = attribute.DisplayName;
+            var attributeToName = attributeToMember.DisplayName;
 
-            Regex mention = new Regex("<@!(?<id>\\d+)>");
+            var mention = new Regex("<@!(?<id>\\d+)>");
 
             Content = mention.Replace(Content, MentionTron);
 
-            var message = await ctx.RespondAsync($"Want me to add this to the quote DB?\n> {Content.Replace("\n", "\n> ")} \n―{attribName}");
+            var message = await ctx.RespondAsync($"Want me to add this to the quote DB?\n> {Content.Replace("\n", "\n> ")} \n―{attributeToName}");
 
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("❎"));
@@ -104,8 +103,8 @@ namespace ShitpostTron5000
                 {
                     DiscordSnowFlake = 0,
                     QuoteText = Content,
-                    QuoteeName = attribName,
-                    QouteeDiscordSnoflake = attribute.Id,
+                    QuoteeName = attributeToName,
+                    QouteeDiscordSnoflake = attributeToMember.Id,
 
                 };
                 db.Add(q);
@@ -125,7 +124,7 @@ namespace ShitpostTron5000
         {
             try
             {
-                //ugly asyc handling bleh.
+                //ugly asyc boundary because System.Regex dont do async yet.
                 return "@" + Program.Client.GetUserAsync(ulong.Parse(x.Groups["id"].ToString())).Result.Username;
             }
             catch
@@ -191,6 +190,8 @@ namespace ShitpostTron5000
             else
             {
                 await message.ModifyAsync("No good after all?");
+                await Task.Delay(TimeSpan.FromSeconds(6));
+                await message.DeleteAsync();
             }
         }
     }
