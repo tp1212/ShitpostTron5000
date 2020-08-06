@@ -96,6 +96,7 @@ namespace ShitpostTron5000
             _commands.RegisterCommands<BasicCommands>();
             _commands.RegisterCommands<Timers>();
             _commands.RegisterCommands<QuoteDB>();
+            _commands.RegisterCommands<Barotrauma>();
 
             Client.ClientErrored += async ex =>
             {
