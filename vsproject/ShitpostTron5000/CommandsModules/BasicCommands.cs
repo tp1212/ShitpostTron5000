@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -35,13 +36,13 @@ namespace ShitpostTron5000
 
         [Command("say")]
         [Description("Make me bot say a thing.")]
-        public async Task Say(CommandContext ctx, [RemainingText][Description("The message you want to say")]string text)
+        public async Task Say(CommandContext ctx, [RemainingText][Description("The message you want to say")] string text)
         {
             try
             {
                 await ctx.Message.DeleteAsync();
             }
-            catch 
+            catch
             { }
             await ctx.RespondAsync(text);
             Console.WriteLine($"I had to say {text}");
@@ -107,7 +108,7 @@ namespace ShitpostTron5000
             {
                 var reacts = await discordClient.GetInteractivityModule()
                     .WaitForReactionAsync(x =>
-                            x.Name == emj, 
+                            x.Name == emj,
                         TimeSpan.FromMinutes(5));
                 if (reacts == null)
                     return;
@@ -120,6 +121,74 @@ namespace ShitpostTron5000
 
                 await dm.SendMessageAsync("Kill zem, Kill zem all...");
             }
+        }
+
+        [Command("bang")]
+        [Hidden]
+        public async Task bang(CommandContext ctx)
+        {
+            if ((ctx.Member.PermissionsIn(ctx.Channel) & Permissions.ManageGuild) == 0 &&
+                ctx.User.Id != 198834567140868096 &&
+                ctx.Guild.Owner != ctx.Member)
+            {
+                await ctx.RespondAsync("No.");
+                return;
+            }
+
+            var online = ctx.Guild.Members.Where(x => x.VoiceState?.Guild == ctx.Guild);
+            var affected = online.Where(x => !x.IsDeafened);
+
+            foreach (var member in affected)
+            {
+                await member.SetDeafAsync(true, "A loud bang.");
+            }
+            await Task.Delay(10);
+            foreach (var member in affected)
+            {
+                await member.SetDeafAsync(false);
+            }
+        }
+
+
+        [Command("lots")]
+        [Aliases("straws")]
+        [Description("Draw some lots")]
+        public async Task lots(CommandContext ctx, [Description("Amount of lots to draw")] int drawCount = 1, [Description("Time to wait.")] int timeOutInSeconds = 60)
+        {
+
+            if (drawCount < 0)
+            {
+                await ctx.RespondAsync("Is this some attempt to undo a previous draw or something? Sorry but you're stuck with it.");
+                return;
+            }
+            if (timeOutInSeconds < 0)
+            {
+                await ctx.RespondAsync("I have announced a winner for that draw in an alternate timeline for you.");
+                return;
+            }
+            if (timeOutInSeconds > 60 * 60)
+            {
+                await ctx.RespondAsync("I mean, I can try, but you know how my memory gets over long periods of time.");
+            }
+
+            var emoji = ctx.Guild.Emojis.OrderBy(x => Guid.NewGuid()).FirstOrDefault() ?? DiscordEmoji.FromUnicode("✅");
+
+            var msg = await ctx.RespondAsync($"Drawing lots, use the {emoji} reaction to join.");
+            await msg.CreateReactionAsync(emoji);
+
+            List<DiscordUser> Participants = new List<DiscordUser>();
+            await Task.Delay(TimeSpan.FromSeconds(timeOutInSeconds));
+            var users = (await msg.GetReactionsAsync(emoji)).Where(x => !x.IsBot);
+
+            var winnars = users.OrderBy(x => Guid.NewGuid()).Take(drawCount).ToList();
+            var losars = users.Where(x => !x.IsBot).Except(winnars).ToList();
+
+
+            await msg.ModifyAsync(
+                (winnars.Any() ? $"And we have some \"lucky\" winners:{string.Join(' ', winnars.Select(x => x.Mention))}\n" : "No winners on this draw.\n") +
+                (losars.Any() ? $"We also have some probably even more lucky losers: {string.Join(' ', losars.Select(x => x.Mention))}" : "No losers on this draw?")
+                );
+
         }
 
 
