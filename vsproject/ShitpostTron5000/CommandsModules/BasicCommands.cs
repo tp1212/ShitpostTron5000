@@ -54,18 +54,28 @@ namespace ShitpostTron5000
         [Hidden]
         public async Task SummonKevinSpecifically(CommandContext ctx)
         {
+            var kevin = await Program.Client.GetUserAsync(91586237478998016);
+            var memberKevin = ctx.Guild.Members.First(x => x.Username == kevin.Username);
+            if (ctx.Member==memberKevin)
+            {
+                var channels = ctx.Guild.Channels.Where(x => x.Type == ChannelType.Voice)
+                    .OrderBy(x => Guid.NewGuid())
+                    .Take(4);
+                foreach (var channel in channels)
+                {
+                    await memberKevin.PlaceInAsync(channel);
+                    await Task.Delay(8000);
+                }
+                return;
+            }
 
             if (ctx.Member.VoiceState.Channel == null)
                 return;
 
-            var kevin = await Program.Client.GetUserAsync(91586237478998016);
-
-
-            var memberkevin = ctx.Guild.Members.FirstOrDefault(x => x.Username == kevin.Username);
-            if (memberkevin?.VoiceState?.Channel == null)
+            if (memberKevin?.VoiceState?.Channel == null)
                 return;
 
-            await memberkevin.PlaceInAsync(ctx.Member.VoiceState.Channel);
+            await memberKevin.PlaceInAsync(ctx.Member.VoiceState.Channel);
 
             await ctx.RespondAsync($"ьщму {kevin.Mention}! ьщму!");
         }
