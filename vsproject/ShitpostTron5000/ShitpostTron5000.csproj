@@ -6,6 +6,12 @@
   <ItemGroup>
     <Compile Remove="Migrations\20200218171216_initial.cs" />
     <Compile Remove="Migrations\20200218171216_initial.Designer.cs" />
+    <Compile Remove="Migrations\20200806150055_sailors.cs" />
+    <Compile Remove="Migrations\20200806150055_sailors.Designer.cs" />
+    <Compile Remove="Migrations\20200806152649_sailors-id-fix.cs" />
+    <Compile Remove="Migrations\20200806152649_sailors-id-fix.Designer.cs" />
+    <Compile Remove="Migrations\20200806152842_sailors.cs" />
+    <Compile Remove="Migrations\20200806152842_sailors.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\avatar.png" />
@@ -48,6 +54,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\barotraumaroles.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Settings.job">
