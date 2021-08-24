@@ -8,6 +8,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using ShitpostTron5000.Data;
 
@@ -185,7 +186,7 @@ namespace ShitpostTron5000.CommandsModules
             if (choice.Result.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase))
             {
                 await message.ModifyAsync("Working.");
-                ShitpostTronContext db = Program.GetDbContext();
+               
 
                 Quote q = new Quote
                 {
@@ -195,8 +196,8 @@ namespace ShitpostTron5000.CommandsModules
                     QouteeDiscordSnowflake = targetMsg.Author.Id,
 
                 };
-                db.Add(q);
-                await db.SaveChangesAsync();
+                _db.Add(q);
+                await _db.SaveChangesAsync();
                 await message.ModifyAsync("Done!");
                 await Task.Delay(TimeSpan.FromSeconds(6));
                 await message.DeleteAsync();

@@ -26,13 +26,6 @@ namespace ShitpostTron5000
 
         public static IConfigurationRoot Config;
 
-        public static ShitpostTronContext GetDbContext()
-        {
-            return new ShitpostTronContext(new DbContextOptionsBuilder<ShitpostTronContext>()
-                .UseSqlServer(Config["ShitpostTronDB"])
-                .Options);
-        }
-
 
         public static async Task Main()
         {
@@ -52,7 +45,7 @@ namespace ShitpostTron5000
 
             Log.Information("Initializing.");
 
-            await GetDbContext().Database.MigrateAsync();
+          
 
             var client = new DiscordClient(new DiscordConfiguration
             {
@@ -63,11 +56,17 @@ namespace ShitpostTron5000
 
 
             var services = new ServiceCollection()
-                .AddTransient<ShitpostTronContext>()
+                .AddTransient<ShitpostTronContext>(x=>new ShitpostTronContext(new DbContextOptionsBuilder<ShitpostTronContext>()
+                    .UseSqlServer(Config["ShitpostTronDB"])
+                    .Options))
                 .AddSingleton<Random>()
                 .AddSingleton(interactivityExtension)
                 .AddSingleton(client)
                 .BuildServiceProvider();
+
+            await services.GetService<ShitpostTronContext>()!
+                .Database
+                .MigrateAsync();
 
             var commands = client.UseCommandsNext(new CommandsNextConfiguration
             {
