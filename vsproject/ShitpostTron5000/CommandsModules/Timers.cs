@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ShitpostTron5000.CommandsModules
 {
-    class Timers
+    class Timers : BaseCommandModule
     {
 
         static readonly List<Func<CommandContext, string>> TimerResponses = new List<Func<CommandContext, string>>

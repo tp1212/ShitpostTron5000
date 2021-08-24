@@ -12,11 +12,12 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using ShitpostTron5000.CommandsModules;
 
 namespace ShitpostTron5000
 {
-    class BasicCommands
+    class BasicCommands : BaseCommandModule
     {
         private static Random _rand = new Random();
         private readonly QuoteDB QuoteDB = new QuoteDB();
@@ -26,11 +27,9 @@ namespace ShitpostTron5000
         [Description("STOP IT.")]
         public async Task Stop(CommandContext ctx)
         {
-            string content = string.Concat(Enumerable.Repeat("STOP IT, ", 100));
+            var content = string.Concat(Enumerable.Repeat("STOP IT, ", 100));
             await ctx.RespondAsync(content);
-            DiscordChannel pm = await Program.Client.CreateDmAsync(ctx.User);
-            await pm.SendMessageAsync(content);
-            Console.WriteLine($"I had to stop it, I did not.");
+            await ctx.Member.SendMessageAsync(content);
         }
 
 
@@ -54,16 +53,16 @@ namespace ShitpostTron5000
         [Hidden]
         public async Task SummonKevinSpecifically(CommandContext ctx)
         {
-            var kevin = await Program.Client.GetUserAsync(91586237478998016);
-            var memberKevin = ctx.Guild.Members.First(x => x.Username == kevin.Username);
-            if (ctx.Member==memberKevin)
+            var frejya = await Program.Client.GetUserAsync(91586237478998016);
+            var frejyaAsMember = ctx.Guild.Members.Values.First(x => x.Username == frejya.Username);
+            if (ctx.Member == frejyaAsMember)
             {
-                var channels = ctx.Guild.Channels.Where(x => x.Type == ChannelType.Voice)
+                var channels = ctx.Guild.Channels.Values.Where(x => x.Type == ChannelType.Voice)
                     .OrderBy(x => Guid.NewGuid())
                     .Take(4);
                 foreach (var channel in channels)
                 {
-                    await memberKevin.PlaceInAsync(channel);
+                    await frejyaAsMember.PlaceInAsync(channel);
                     await Task.Delay(8000);
                 }
                 return;
@@ -72,12 +71,12 @@ namespace ShitpostTron5000
             if (ctx.Member.VoiceState.Channel == null)
                 return;
 
-            if (memberKevin?.VoiceState?.Channel == null)
+            if (frejyaAsMember?.VoiceState?.Channel == null)
                 return;
 
-            await memberKevin.PlaceInAsync(ctx.Member.VoiceState.Channel);
+            await frejyaAsMember.PlaceInAsync(ctx.Member.VoiceState.Channel);
 
-            await ctx.RespondAsync($"ьщму {kevin.Mention}! ьщму!");
+            await ctx.RespondAsync($"ьщму {frejya.Mention}! ьщму!");
         }
 
 
@@ -87,7 +86,7 @@ namespace ShitpostTron5000
         {
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(@"ShitpostTron5000.Assets.ratava.png"))
             {
-                await Program.Client.EditCurrentUserAsync(avatar: stream);
+                var user = await Program.Client.UpdateCurrentUserAsync(avatar: stream);
             }
         }
 
@@ -99,7 +98,7 @@ namespace ShitpostTron5000
         {
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(@"ShitpostTron5000.Assets.avatar.png"))
             {
-                await Program.Client.EditCurrentUserAsync(avatar: stream);
+                await Program.Client.UpdateCurrentUserAsync(avatar: stream);
             }
         }
 
@@ -116,46 +115,17 @@ namespace ShitpostTron5000
 
             while (true)
             {
-                var reacts = await discordClient.GetInteractivityModule()
+                var reacts = await discordClient.GetInteractivity()
                     .WaitForReactionAsync(x =>
-                            x.Name == emj,
+                            x.Emoji.Name == emj,
                         TimeSpan.FromMinutes(5));
-                if (reacts == null)
+                if(reacts.TimedOut)
                     return;
-                if (reacts.User == discordClient.CurrentUser)
+                if (reacts.Result.User == discordClient.CurrentUser)
                     continue;
-
-                if (reacts.Message != message)
+                if (reacts.Result.Message != message)
                     continue;
-                var dm = await discordClient.CreateDmAsync(reacts.User);
-
-                await dm.SendMessageAsync("Kill zem, Kill zem all...");
-            }
-        }
-
-        [Command("bang")]
-        [Hidden]
-        public async Task bang(CommandContext ctx)
-        {
-            if ((ctx.Member.PermissionsIn(ctx.Channel) & Permissions.ManageGuild) == 0 &&
-                ctx.User.Id != 198834567140868096 &&
-                ctx.Guild.Owner != ctx.Member)
-            {
-                await ctx.RespondAsync("No.");
-                return;
-            }
-
-            var online = ctx.Guild.Members.Where(x => x.VoiceState?.Guild == ctx.Guild);
-            var affected = online.Where(x => !x.IsDeafened);
-
-            foreach (var member in affected)
-            {
-                await member.SetDeafAsync(true, "A loud bang.");
-            }
-            await Task.Delay(10);
-            foreach (var member in affected)
-            {
-                await member.SetDeafAsync(false);
+                await ctx.Member.SendMessageAsync("Kill zem, Kill zem all...");
             }
         }
 
@@ -181,7 +151,7 @@ namespace ShitpostTron5000
                 await ctx.RespondAsync("I mean, I can try, but you know how my memory gets over long periods of time.");
             }
 
-            var emoji = ctx.Guild.Emojis.OrderBy(x => Guid.NewGuid()).FirstOrDefault() ?? DiscordEmoji.FromUnicode("✅");
+            var emoji = ctx.Guild.Emojis.Values.OrderBy(x => Guid.NewGuid()).FirstOrDefault() ?? DiscordEmoji.FromUnicode("✅");
 
             var msg = await ctx.RespondAsync($"Drawing lots, use the {emoji} reaction to join.");
             await msg.CreateReactionAsync(emoji);
@@ -333,7 +303,7 @@ namespace ShitpostTron5000
             response.Append($"I am connected to {Program.Client.Guilds.Count} Servers\n");
 
             response.Append($"I am aware of the following channels on this server: ```\n");
-            foreach (DiscordChannel chanl in ctx.Guild.Channels)
+            foreach (DiscordChannel chanl in ctx.Guild.Channels.Values)
             {
                 response.Append($"{chanl.Name}:{chanl.Id} NSFW:{(chanl.IsNSFW ? "YES" : "NO")}\n");
             }
@@ -346,7 +316,7 @@ namespace ShitpostTron5000
         [Command("move")]
         public async Task Move(CommandContext ctx, DiscordMember user, DiscordChannel target)
         {
-            await user.ModifyAsync(null, null, null, null, target, "for the lulz.");
+            await user.ModifyAsync((member) => member.VoiceChannel = target);
         }
 
 

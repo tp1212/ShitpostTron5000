@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.WindowsAzure.Storage;
@@ -20,7 +21,7 @@ namespace ShitpostTron5000
     class Program
     {
         public static DiscordClient Client;
-        static CommandsNextModule _commands;
+        static CommandsNextExtension _commands;
         public static DateTime Start;
 
         public static IConfigurationRoot Config;
@@ -78,9 +79,10 @@ namespace ShitpostTron5000
             {
                 Token = Config["TokenString"],
                 TokenType = TokenType.Bot,
-                UseInternalLogHandler = true
+                //UseInternalLogHandler = true
             });
             Client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5) });
+  
         }
 
 
@@ -90,37 +92,37 @@ namespace ShitpostTron5000
 
             _commands = Client.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefix = "!",
+                StringPrefixes = new []{"!"},
                 CaseSensitive = false
             });
             _commands.RegisterCommands<BasicCommands>();
             _commands.RegisterCommands<Timers>();
             _commands.RegisterCommands<QuoteDB>();
 
-            Client.ClientErrored += async ex =>
+            Client.ClientErrored += async (sender, args ) =>
             {
-               Log.Logger.Error("Client Error",ex.Exception);
+               Log.Logger.Error("Client Error",args.Exception);//Todo:use extra event data.
             };
 
-            _commands.CommandExecuted += async eventArgs =>
+            _commands.CommandExecuted += async (client,eventArgs) =>
                 Log.Logger.Information($"Executed Command {eventArgs.Command} for {eventArgs.Context.User}");
 
-            _commands.CommandErrored += async ex =>
+            _commands.CommandErrored += async (client, eventArgs) =>
             {
-                Log.Logger.Error("Command Error", ex.Exception);
+                Log.Logger.Error("Command Error", eventArgs.Exception);
             };
 
-            Client.MessageCreated += async e =>
+            Client.MessageCreated += async (sender, e) =>
             {
                 if (e.Channel.Name == "devtrons")
                     if (e.Message.Content.ToLower().StartsWith("ping"))
                         await e.Message.RespondAsync("pong!");
             };
 
-            Client.VoiceStateUpdated += async e =>
-            {
-                //await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
-            };
+            //Client.VoiceStateUpdated += async e =>
+            //{
+            //    //await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
+            //};
 
             await Client.ConnectAsync();
         }

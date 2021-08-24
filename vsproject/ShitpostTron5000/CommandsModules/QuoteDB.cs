@@ -6,14 +6,16 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using Serilog;
 using ShitpostTron5000.Data;
 
 namespace ShitpostTron5000.CommandsModules
 {
-    public class QuoteDB
+    public class QuoteDB : BaseCommandModule
     {
-        [Command("QuoteRandom")][Description("Get a quote at random, yay.")]
+        [Command("QuoteRandom")]
+        [Description("Get a quote at random, yay.")]
         public async Task GetRandomQuote(CommandContext ctx)
         {
             ShitpostTronContext db = Program.GetDbContext();
@@ -25,7 +27,8 @@ namespace ShitpostTron5000.CommandsModules
             await SayQuote(ctx, db, quoteNumber);
         }
 
-        [Command("Quote")][Description("Get a quote by number, yay.")]
+        [Command("Quote")]
+        [Description("Get a quote by number, yay.")]
         public async Task GetQuote(CommandContext ctx, int number)
         {
             ShitpostTronContext db = Program.GetDbContext();
@@ -34,19 +37,20 @@ namespace ShitpostTron5000.CommandsModules
 
             await SayQuote(ctx, db, number);
         }
-        
+
         [Command("QuoteBrowser")]
         [Description("Get a quote by number, yay.")]
         public async Task GetPaginatedQuote(CommandContext ctx, int number = 1)
         {
             ShitpostTronContext db = Program.GetDbContext();
-            var inter = Program.Client.GetInteractivityModule();
-            
-            await inter.SendPaginatedMessage(ctx.Channel, ctx.User,
-                db.Quotes.Select(x => new Page{Content = QuoteToString(x)}));
+            var inter = Program.Client.GetInteractivity();
+
+            await inter.SendPaginatedMessageAsync(ctx.Channel,
+                ctx.User,
+                db.Quotes.Select(x => new Page(QuoteToString(x), null)));
 
         }
-        
+
         private static async Task SayQuote(CommandContext ctx, ShitpostTronContext db, int quoteNumber)
         {
             var result = db.Quotes.FirstOrDefault(x => x.Id == quoteNumber);
@@ -58,7 +62,7 @@ namespace ShitpostTron5000.CommandsModules
             await ctx.RespondAsync(QuoteToString(result));
         }
 
-        private static string QuoteToString( Quote result)
+        private static string QuoteToString(Quote result)
         {
             return $"{result.QuoteText.Replace("\n", "\n> ")} \n―{result.QuoteeName} \t#{result.Id}";
         }
@@ -66,9 +70,9 @@ namespace ShitpostTron5000.CommandsModules
 
         [Command("QuoteManual")]
         [Description("Manually add a quote, like for when you hear something\n eg !quoteManual @Steve Funny words go here.")]
-        public async Task QuoteFromUser(CommandContext ctx, DiscordMember attributeToMember, [RemainingText]string Content)
+        public async Task QuoteFromUser(CommandContext ctx, DiscordMember attributeToMember, [RemainingText] string Content)
         {
-            var inter = Program.Client.GetInteractivityModule();
+            var inter = Program.Client.GetInteractivity();
 
             var attributeToName = attributeToMember.DisplayName;
 
@@ -81,8 +85,8 @@ namespace ShitpostTron5000.CommandsModules
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("❎"));
 
-            var choice = await inter.WaitForReactionAsync(x => x.Name.Contains("✅", StringComparison.OrdinalIgnoreCase) 
-                                                               || x.Name.Contains("❎", StringComparison.OrdinalIgnoreCase),
+            var choice = await inter.WaitForReactionAsync(x => x.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase)
+                                                               || x.Emoji.Name.Contains("❎", StringComparison.OrdinalIgnoreCase),
                 ctx.User);
 
             try
@@ -93,8 +97,8 @@ namespace ShitpostTron5000.CommandsModules
             {
                 Log.Warning("did not clean reactons", ex);
             }
-            
-            if (choice.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase))
+
+            if (choice.Result.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase))
             {
                 await message.ModifyAsync("Working.");
                 ShitpostTronContext db = Program.GetDbContext();
@@ -146,16 +150,16 @@ namespace ShitpostTron5000.CommandsModules
                 return;
             }
 
-            var inter = Program.Client.GetInteractivityModule();
+            var inter = Program.Client.GetInteractivity();
 
             var message = await ctx.RespondAsync($"Want me to add this to the quote DB?\n>>> {targetMsg.Content}");
 
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("❎"));
 
-            var choice = await inter.WaitForReactionAsync(x => x.Name.Contains("✅",
+            var choice = await inter.WaitForReactionAsync(x => x.Emoji.Name.Contains("✅",
                                                                    StringComparison.OrdinalIgnoreCase) ||
-                                                               x.Name.Contains("❎",
+                                                               x.Emoji.Name.Contains("❎",
                                                                    StringComparison.OrdinalIgnoreCase),
                 ctx.User);
             try
@@ -168,7 +172,7 @@ namespace ShitpostTron5000.CommandsModules
             }
 
 
-            if (choice.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase))
+            if (choice.Result.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase))
             {
                 await message.ModifyAsync("Working.");
                 ShitpostTronContext db = Program.GetDbContext();

@@ -6,13 +6,10 @@ namespace ShitpostTron5000
 {
     public class ShitpostTronContext : DbContext
     {
-
-
         public ShitpostTronContext(DbContextOptions<ShitpostTronContext> context) : base(context)
         {
         
         }
-
 
         public ShitpostTronContext()
         {
@@ -20,7 +17,5 @@ namespace ShitpostTron5000
 
         public DbSet<Quote> Quotes { get; set; }
         public DbSet<Timer> Timers { get; set; }
-
-
     }
 }
