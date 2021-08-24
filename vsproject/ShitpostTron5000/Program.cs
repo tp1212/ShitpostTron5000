@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -6,6 +7,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
 using Serilog;
 using ShitpostTron5000.CommandsModules;
@@ -20,8 +22,6 @@ namespace ShitpostTron5000
 
     class Program
     {
-        public static DiscordClient Client;
-        static CommandsNextExtension _commands;
         public static DateTime Start;
 
         public static IConfigurationRoot Config;
@@ -34,28 +34,7 @@ namespace ShitpostTron5000
         }
 
 
-        static void Main(string[] args)
-        {
-            Start = DateTime.Now;
-            try
-            {
-                MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal("Main died",ex);
-                throw;
-            }
-     
-
-            while (true)
-            {
-                string msg = Console.ReadLine();
-                Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), msg);
-            }
-        }
-
-        static async Task Init(string[] args)
+        public static async Task Main()
         {
             Config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true)
@@ -68,51 +47,62 @@ namespace ShitpostTron5000
                 .WriteTo.Debug()
                 .WriteTo.AzureTableStorage(
                     CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=shitposttronstorage;AccountKey=usqGBGKzJ0b8hAo3joCHNr2j1IfiWaTeFzkBBsPEjh/RCOuN+fRuAH+G/pIc/IvYwOK9CqZjyC1hF3GAs7BgFQ==;EndpointSuffix=core.windows.net")
-                , storageTableName: "Complaints"
-                    ).CreateLogger();
+                    , storageTableName: "Complaints"
+                ).CreateLogger();
 
             Log.Information("Initializing.");
 
             await GetDbContext().Database.MigrateAsync();
 
-            Client = new DiscordClient(new DiscordConfiguration
+            var client = new DiscordClient(new DiscordConfiguration
             {
                 Token = Config["TokenString"],
-                TokenType = TokenType.Bot,
-                //UseInternalLogHandler = true
+                TokenType = TokenType.Bot
             });
-            Client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5) });
-  
-        }
+            var interactivityExtension = client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5) });
 
 
-        static async Task MainAsync(string[] args)
-        {
-            await Init(args);
+            var services = new ServiceCollection()
+                .AddTransient<ShitpostTronContext>()
+                .AddSingleton<Random>()
+                .AddSingleton(interactivityExtension)
+                .AddSingleton(client)
+                .BuildServiceProvider();
 
-            _commands = Client.UseCommandsNext(new CommandsNextConfiguration
+            var commands = client.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new []{"!"},
-                CaseSensitive = false
+                CaseSensitive = false,
+                Services = services,
             });
-            _commands.RegisterCommands<BasicCommands>();
-            _commands.RegisterCommands<Timers>();
-            _commands.RegisterCommands<QuoteDB>();
+            commands.RegisterCommands<BasicCommands>();
+            commands.RegisterCommands<Timers>();
+            commands.RegisterCommands<QuoteDB>();
 
-            Client.ClientErrored += async (sender, args ) =>
+            client.ClientErrored += async (sender, args ) =>
             {
                Log.Logger.Error("Client Error",args.Exception);//Todo:use extra event data.
             };
 
-            _commands.CommandExecuted += async (client,eventArgs) =>
+            commands.CommandExecuted += async (client,eventArgs) =>
                 Log.Logger.Information($"Executed Command {eventArgs.Command} for {eventArgs.Context.User}");
 
-            _commands.CommandErrored += async (client, eventArgs) =>
+            commands.CommandErrored += async (client, eventArgs) =>
             {
-                Log.Logger.Error("Command Error", eventArgs.Exception);
+                var owner = await client.Client.Guilds[376781308845752340].GetMemberAsync(102061162195091456);
+                
+                await owner.SendMessageAsync(@$"{eventArgs.Command}
+had an error: 
+```
+{eventArgs.Exception}
+```");
+
+                Log.Logger.Error($"{eventArgs.Command}:" +
+                                 $"had an error:" +
+                                 $" {eventArgs.Exception}");
             };
 
-            Client.MessageCreated += async (sender, e) =>
+            client.MessageCreated += async (sender, e) =>
             {
                 if (e.Channel.Name == "devtrons")
                     if (e.Message.Content.ToLower().StartsWith("ping"))
@@ -124,7 +114,8 @@ namespace ShitpostTron5000
             //    //await Client.SendMessageAsync(Client.GetChannelAsync(245227159445045249).GetAwaiter().GetResult(), $"{e.User.Username} just joined {e.Channel.Name}");
             //};
 
-            await Client.ConnectAsync();
+            await client.ConnectAsync();
+            await Task.Delay(-1);
         }
     }
 }

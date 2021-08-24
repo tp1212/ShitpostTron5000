@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -12,48 +13,59 @@ using ShitpostTron5000.Data;
 
 namespace ShitpostTron5000.CommandsModules
 {
+    [ModuleLifespan(ModuleLifespan.Transient)]
     public class QuoteDB : BaseCommandModule
     {
+        private readonly ShitpostTronContext _db;
+        private readonly InteractivityExtension _interactivity;
+        private readonly DiscordClient _client;
+
+        public QuoteDB(ShitpostTronContext db, InteractivityExtension interactivity,DiscordClient client)
+        {
+            _db = db;
+            _interactivity = interactivity;
+            _client = client;
+        }
+
+
         [Command("QuoteRandom")]
         [Description("Get a quote at random, yay.")]
         public async Task GetRandomQuote(CommandContext ctx)
         {
-            ShitpostTronContext db = Program.GetDbContext();
-            if (!db.Quotes.Any())
+            if (!_db.Quotes.Any())
                 return;
 
 
-            var quoteNumber = new Random().Next(db.Quotes.Count());
-            await SayQuote(ctx, db, quoteNumber);
+            var quoteNumber = new Random().Next(_db.Quotes.Count());
+            await SayQuote(ctx,  quoteNumber);
         }
 
         [Command("Quote")]
         [Description("Get a quote by number, yay.")]
         public async Task GetQuote(CommandContext ctx, int number)
         {
-            ShitpostTronContext db = Program.GetDbContext();
-            if (!db.Quotes.Any())
+            if (!_db.Quotes.Any())
                 return;
 
-            await SayQuote(ctx, db, number);
+            await SayQuote(ctx, number);
         }
 
         [Command("QuoteBrowser")]
         [Description("Get a quote by number, yay.")]
         public async Task GetPaginatedQuote(CommandContext ctx, int number = 1)
         {
-            ShitpostTronContext db = Program.GetDbContext();
-            var inter = Program.Client.GetInteractivity();
+            
+            var inter = _client.GetInteractivity();
 
             await inter.SendPaginatedMessageAsync(ctx.Channel,
                 ctx.User,
-                db.Quotes.Select(x => new Page(QuoteToString(x), null)));
+                _db.Quotes.Select(x => new Page(QuoteToString(x), null)));
 
         }
 
-        private static async Task SayQuote(CommandContext ctx, ShitpostTronContext db, int quoteNumber)
+        private async Task SayQuote(CommandContext ctx, int quoteNumber)
         {
-            var result = db.Quotes.FirstOrDefault(x => x.Id == quoteNumber);
+            var result = _db.Quotes.FirstOrDefault(x => x.Id == quoteNumber);
             if (result == null)
             {
                 ctx.RespondAsync($"Could not find quote #{quoteNumber}");
@@ -72,8 +84,6 @@ namespace ShitpostTron5000.CommandsModules
         [Description("Manually add a quote, like for when you hear something\n eg !quoteManual @Steve Funny words go here.")]
         public async Task QuoteFromUser(CommandContext ctx, DiscordMember attributeToMember, [RemainingText] string Content)
         {
-            var inter = Program.Client.GetInteractivity();
-
             var attributeToName = attributeToMember.DisplayName;
 
             var mention = new Regex("<@!(?<id>\\d+)>");
@@ -85,7 +95,7 @@ namespace ShitpostTron5000.CommandsModules
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode("❎"));
 
-            var choice = await inter.WaitForReactionAsync(x => x.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase)
+            var choice = await _interactivity.WaitForReactionAsync(x => x.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase)
                                                                || x.Emoji.Name.Contains("❎", StringComparison.OrdinalIgnoreCase),
                 ctx.User);
 
@@ -101,7 +111,7 @@ namespace ShitpostTron5000.CommandsModules
             if (choice.Result.Emoji.Name.Contains("✅", StringComparison.OrdinalIgnoreCase))
             {
                 await message.ModifyAsync("Working.");
-                ShitpostTronContext db = Program.GetDbContext();
+                
 
                 Quote q = new Quote
                 {
@@ -111,8 +121,8 @@ namespace ShitpostTron5000.CommandsModules
                     QouteeDiscordSnowflake = attributeToMember.Id,
 
                 };
-                db.Add(q);
-                await db.SaveChangesAsync();
+                _db.Add(q);
+                await _db.SaveChangesAsync();
                 await message.ModifyAsync("Done!");
 
             }
@@ -129,7 +139,7 @@ namespace ShitpostTron5000.CommandsModules
             try
             {
                 //ugly asyc boundary because System.Regex dont do async yet.
-                return "@" + Program.Client.GetUserAsync(ulong.Parse(x.Groups["id"].ToString())).Result.Username;
+                return "@" + _client.GetUserAsync(ulong.Parse(x.Groups["id"].ToString())).Result.Username;
             }
             catch
             {
@@ -150,7 +160,7 @@ namespace ShitpostTron5000.CommandsModules
                 return;
             }
 
-            var inter = Program.Client.GetInteractivity();
+            var inter = _client.GetInteractivity();
 
             var message = await ctx.RespondAsync($"Want me to add this to the quote DB?\n>>> {targetMsg.Content}");
 

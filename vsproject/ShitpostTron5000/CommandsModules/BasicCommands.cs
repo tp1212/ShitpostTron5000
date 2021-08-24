@@ -17,10 +17,17 @@ using ShitpostTron5000.CommandsModules;
 
 namespace ShitpostTron5000
 {
+    [ModuleLifespan(ModuleLifespan.Transient)]
     class BasicCommands : BaseCommandModule
     {
-        private static Random _rand = new Random();
-        private readonly QuoteDB QuoteDB = new QuoteDB();
+        private Random _random;
+        private readonly DiscordClient _client;
+
+        public BasicCommands(Random random, DiscordClient client)
+        {
+            _random = random;
+            _client = client;
+        }
 
         [Command("stop")]
         [Hidden]
@@ -51,9 +58,9 @@ namespace ShitpostTron5000
         [Command("ьщму")]
         [Description("Мувес Неткэв то юур воис чаннэл.")]
         [Hidden]
-        public async Task SummonKevinSpecifically(CommandContext ctx)
+        public async Task SummonFrejyaSpecifically(CommandContext ctx)
         {
-            var frejya = await Program.Client.GetUserAsync(91586237478998016);
+            var frejya = await _client.GetUserAsync(91586237478998016);
             var frejyaAsMember = ctx.Guild.Members.Values.First(x => x.Username == frejya.Username);
             if (ctx.Member == frejyaAsMember)
             {
@@ -86,7 +93,7 @@ namespace ShitpostTron5000
         {
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(@"ShitpostTron5000.Assets.ratava.png"))
             {
-                var user = await Program.Client.UpdateCurrentUserAsync(avatar: stream);
+                var user = await _client.UpdateCurrentUserAsync(avatar: stream);
             }
         }
 
@@ -98,7 +105,7 @@ namespace ShitpostTron5000
         {
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(@"ShitpostTron5000.Assets.avatar.png"))
             {
-                await Program.Client.UpdateCurrentUserAsync(avatar: stream);
+                await _client.UpdateCurrentUserAsync(avatar: stream);
             }
         }
 
@@ -109,7 +116,7 @@ namespace ShitpostTron5000
         {
             var message = await ctx.RespondAsync("Ring... Ring...");
             const string emj = "☎";
-            var discordClient = Program.Client;
+            var discordClient = _client;
             await message.CreateReactionAsync(DiscordEmoji.FromUnicode(discordClient, emj));
 
 
@@ -242,7 +249,7 @@ namespace ShitpostTron5000
                     response.Append($"{DieString(die)}:\n");
                     for (int i = 1; i < die.dc + 1; i++)
                     {
-                        long roll = _rand.Next(1, die.dn + 1);
+                        long roll = _random.Next(1, die.dn + 1);
                         response.Append($"{i}:{roll}{DmString(die)}\t");
                         total += roll + (long)die.dm;
                         if (i % 10 == 0) response.AppendLine();
@@ -299,8 +306,8 @@ namespace ShitpostTron5000
 
             StringBuilder response = new StringBuilder();
             response.Append($"I have been online since {Program.Start}  (uptime:{DateTime.Now - Program.Start})\n");
-            response.Append($"My ping is {Program.Client.Ping}\n");
-            response.Append($"I am connected to {Program.Client.Guilds.Count} Servers\n");
+            response.Append($"My ping is {_client.Ping}\n");
+            response.Append($"I am connected to {_client.Guilds.Count} Servers\n");
 
             response.Append($"I am aware of the following channels on this server: ```\n");
             foreach (DiscordChannel chanl in ctx.Guild.Channels.Values)

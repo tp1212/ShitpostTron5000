@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace ShitpostTron5000.CommandsModules
 {
+    [ModuleLifespan(ModuleLifespan.Transient)]
     class Timers : BaseCommandModule
     {
 
