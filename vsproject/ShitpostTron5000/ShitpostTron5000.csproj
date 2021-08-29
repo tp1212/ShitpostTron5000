@@ -20,6 +20,7 @@
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0" />
     <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0" />
+    <PackageReference Include="Markov" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.9">
       <PrivateAssets>all</PrivateAssets>

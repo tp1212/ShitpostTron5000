@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Markov;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,6 @@ namespace ShitpostTron5000
         public static DateTime Start;
 
         public static IConfigurationRoot Config;
-
 
         public static async Task Main()
         {
@@ -62,6 +62,7 @@ namespace ShitpostTron5000
                 .AddSingleton<Random>()
                 .AddSingleton(interactivityExtension)
                 .AddSingleton(client)
+                .AddSingleton(new MarkovChain<string>(1))
                 .BuildServiceProvider();
 
             await services.GetService<ShitpostTronContext>()!
@@ -77,6 +78,7 @@ namespace ShitpostTron5000
             commands.RegisterCommands<BasicCommands>();
             commands.RegisterCommands<Timers>();
             commands.RegisterCommands<QuoteDB>();
+            commands.RegisterCommands<MarkovChain>();
 
             client.ClientErrored += async (sender, args ) =>
             {

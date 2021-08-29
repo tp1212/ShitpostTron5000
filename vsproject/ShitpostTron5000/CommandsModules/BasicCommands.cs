@@ -140,7 +140,7 @@ namespace ShitpostTron5000
         [Command("lots")]
         [Aliases("straws")]
         [Description("Draw some lots")]
-        public async Task lots(CommandContext ctx, [Description("Amount of lots to draw")] int drawCount = 1, [Description("Time to wait.")] int timeOutInSeconds = 60)
+        public async Task Lots(CommandContext ctx, [Description("Amount of lots to draw")] int drawCount = 1, [Description("Time to wait.")] int timeOutInSeconds = 60)
         {
 
             if (drawCount < 0)

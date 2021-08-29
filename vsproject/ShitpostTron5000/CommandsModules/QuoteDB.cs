@@ -7,6 +7,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -55,12 +56,9 @@ namespace ShitpostTron5000.CommandsModules
         [Description("Get a quote by number, yay.")]
         public async Task GetPaginatedQuote(CommandContext ctx, int number = 1)
         {
-            
             var inter = _client.GetInteractivity();
-
-            await inter.SendPaginatedMessageAsync(ctx.Channel,
-                ctx.User,
-                _db.Quotes.Select(x => new Page(QuoteToString(x), null)));
+            var pages = _db.Quotes.Select(x => new Page(QuoteToString(x), null));
+            await inter.SendPaginatedMessageAsync(ctx.Channel, ctx.User,pages ,PaginationBehaviour.Ignore);
 
         }
 
