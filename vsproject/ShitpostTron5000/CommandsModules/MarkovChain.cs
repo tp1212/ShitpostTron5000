@@ -1,15 +1,16 @@
-﻿using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
+﻿
 using Markov;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DSharpPlus.SlashCommands;
+
 
 namespace ShitpostTron5000.CommandsModules
 {
-    [ModuleLifespan(ModuleLifespan.Singleton)]
-    class MarkovChain : BaseCommandModule
+    [SlashModuleLifespan(SlashModuleLifespan.Singleton)]
+    class MarkovChain : ApplicationCommandModule
     {
         private MarkovChain<string> _markov;
         private Random _random;
@@ -23,19 +24,23 @@ namespace ShitpostTron5000.CommandsModules
         }
 
 
-        [Command("markov")]
-        [Aliases("marcov")]
-        [Description("Reads the last 100 messages into the current markov chain and spits something out.")]
-        public async Task Markov(CommandContext ctx, [RemainingText] string prompt = null)
+        [SlashCommand("markov", "dumps 100 messages into the current markov chain and spits something out.")]
+        public async Task Markov(InteractionContext ctx, [Option("prompt", "a starting point for the chain, you can use more than one word but it only uses the last")] string prompt = "")
         {
             if (ctx.Channel.IsNSFW)
             {
-                await ctx.RespondAsync("I'm not reading any of that, try again in a sfw channel.");
+                await ctx.CreateResponseAsync("I'm not reading any of that, try again in a sfw channel.");
                 return;
             }
             if (ctx.Channel.Id == 425319177738518531)
             {
-                await ctx.RespondAsync("Marcov 'chain', not marcov web. (no spiders!)");
+                await ctx.CreateResponseAsync("Marcov 'chain', not marcov web. (no spiders!)");
+                return;
+            }
+
+            if (ctx.Channel.LastMessageId is null)
+            {
+                await ctx.CreateResponseAsync("this channel is fucking empty?");
                 return;
             }
 
@@ -43,10 +48,9 @@ namespace ShitpostTron5000.CommandsModules
                            ?? new Bookmark()
                            {
                                Channel = ctx.Channel.Id,
-                               Newest = ctx.Message.Id,
-                               Oldest = ctx.Message.Id
+                               Newest = ctx.Channel.LastMessageId.Value,
+                               Oldest = ctx.Channel.LastMessageId.Value
                            };
-            
 
             var messages = (await ctx.Channel.GetMessagesBeforeAsync(bookmark.Oldest))
                     .Concat(await ctx.Channel.GetMessagesAfterAsync(bookmark.Newest))
@@ -55,10 +59,9 @@ namespace ShitpostTron5000.CommandsModules
             bookmark.Newest = messages.First().Id;
             bookmark.Oldest = messages.Last().Id;
 
-
             var filteredMessages = messages
                 .Where(x => !x.Author.IsBot)
-                .Where(x => !x.Content.StartsWith("!"));
+                .Where(x => !x.Content.StartsWith("!")); //old bot commands, probably.
 
             var sentences = filteredMessages
                 .Select(x => x.Content.Split(' '));
@@ -68,26 +71,25 @@ namespace ShitpostTron5000.CommandsModules
                 _markov.Add(sentence);
             }
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 40; i++)
             {
-                string shitpost;
-                if (prompt != null)
-                {
-                    shitpost = $"{prompt} {string.Join(' ', _markov.Chain(prompt.Split(' '), _random))}";
-                }
-                else
-                {
-                    shitpost = string.Join(' ', _markov.Chain(_random));
-                }
+                var words = !string.IsNullOrEmpty(prompt)
+                    ? _markov.Chain(prompt.Split(' ',StringSplitOptions.RemoveEmptyEntries), _random)
+                    : _markov.Chain(_random);
 
-                if (shitpost.Length == 0)
+                var shitpost = string.Join(' ', words);
+
+                if (string.IsNullOrWhiteSpace(shitpost))
                 {
                     continue;
                 }
-                await ctx.RespondAsync(shitpost);
+
+                await ctx.CreateResponseAsync(string.Join(' ', prompt, shitpost));
+
                 return;
             }
-            await ctx.RespondAsync("Not feeling it I guess? (marcov chain resulted in empty string)");
+
+            await ctx.CreateResponseAsync("Not feeling it I guess? (marcov chain resulted in empty string)", true);
         }
 
         private class Bookmark
