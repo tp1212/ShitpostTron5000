@@ -47,11 +47,21 @@ namespace ShitpostTron5000.CommandsModules
 
 
 
-        [SlashCommand("timer", "sets a timer.")]
-        public async Task TimerCmd(InteractionContext ctx, [Option("Minutes", "How many minutes to wait.")] long minutes = 0, [Option("Hours", "How many hours to wait.")] long hours = 0, [Option("Days", "How many hours to wait.")] long days = 0, [Option("name", "The thing you want to be reminded of")] string name = null)
+        [SlashCommand("timer",
+            "sets a timer.")]
+        public async Task TimerCmd(InteractionContext ctx,
+            [Option("Minutes", "How many minutes to wait.")]
+            long minutes = 0,
+            [Option("Hours", "How many hours to wait.")]
+            long hours = 0,
+            [Option("Days",
+                "How many hours to wait.")]
+            long days = 0,
+            [Option("name", "The thing you want to be reminded of")]
+            string name = null)
         {
-            var target = DateTimeOffset.Now.AddMinutes(minutes).AddDays(days);
-            var targetSpan = DateTimeOffset.Now.AddMinutes(minutes).AddDays(days) - DateTime.Now;
+            var target = DateTimeOffset.Now.AddMinutes(minutes).AddHours(hours).AddDays(days);
+            var targetSpan = target - DateTime.Now;
 
             await ctx.CreateResponseAsync($"I set a timer for <t:{target.ToUnixTimeSeconds()}>, keep in mind I don't save these on disk, so I might forget",true);
             
