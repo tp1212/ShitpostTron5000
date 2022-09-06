@@ -73,14 +73,12 @@ class Program
         {
             Services = services,
         });
-
-
-        commands.RegisterCommands<BasicCommands>(376781308845752340);
-        commands.RegisterCommands<Timers>(376781308845752340);
-        commands.RegisterCommands<QuoteDB>(376781308845752340);
-        commands.RegisterCommands<MarkovChain>(376781308845752340);
-
-
+        
+        commands.RegisterCommands<BasicCommands>();
+        commands.RegisterCommands<Timers>();
+        commands.RegisterCommands<QuoteDB>();
+        commands.RegisterCommands<MarkovChain>();
+        
         client.ClientErrored += async (sender, args) =>
         {
             Log.Logger.Error("Client Error", args.Exception);//Todo:use extra event data.
@@ -125,9 +123,15 @@ had an error:
 
     private static async Task Client_Ready(DiscordClient sender, DSharpPlus.EventArgs.ReadyEventArgs e)
     {
-        foreach (var command in (await sender.GetGlobalApplicationCommandsAsync()))
+        //clear out old commands.
+
+        foreach (var guild in sender.Guilds.Select(x => x.Key))
         {
-            await sender.DeleteGlobalApplicationCommandAsync(command.Id);
+            var cleanup = await sender.GetGuildApplicationCommandsAsync(guild);
+            foreach (var command in cleanup)
+            {
+                await sender.DeleteGuildApplicationCommandAsync(guild, command.Id);
+            }
         }
     }
 }
