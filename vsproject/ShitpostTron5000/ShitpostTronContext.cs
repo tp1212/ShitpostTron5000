@@ -11,6 +11,11 @@ namespace ShitpostTron5000
         
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Data Source=shitposttronDB.dat");
+        }
+
         public ShitpostTronContext()
         {
         }

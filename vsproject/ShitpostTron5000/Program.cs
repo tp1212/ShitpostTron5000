@@ -6,14 +6,13 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using Markov;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.WindowsAzure.Storage;
 using Serilog;
 using ShitpostTron5000.CommandsModules;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace ShitpostTron5000;
@@ -38,10 +37,7 @@ class Program
             .Enrich.FromLogContext()
             .WriteTo.Console()
             .WriteTo.Debug()
-            .WriteTo.AzureTableStorage(
-                CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=shitposttronstorage;AccountKey=usqGBGKzJ0b8hAo3joCHNr2j1IfiWaTeFzkBBsPEjh/RCOuN+fRuAH+G/pIc/IvYwOK9CqZjyC1hF3GAs7BgFQ==;EndpointSuffix=core.windows.net")
-                , storageTableName: "Complaints"
-            ).CreateLogger();
+            .CreateLogger();
 
         Log.Information("Initializing.");
 
@@ -52,20 +48,18 @@ class Program
             Token = Config["TokenString"],
             TokenType = TokenType.Bot
         });
-        var interactivityExtension = client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5), AckPaginationButtons = true });
+        var interactivityExtension = client.UseInteractivity(new InteractivityConfiguration() { Timeout = TimeSpan.FromMinutes(5) });
 
 
         var services = new ServiceCollection()
-            .AddTransient<ShitpostTronContext>(x => new ShitpostTronContext(new DbContextOptionsBuilder<ShitpostTronContext>()
-                .UseSqlServer(Config["ShitpostTronDB"])
-                .Options))
+            .AddTransient<ShitpostTronContext>(x => new ShitpostTronContext())
             .AddSingleton<Random>()
             .AddSingleton(interactivityExtension)
             .AddSingleton(client)
             .AddSingleton(new MarkovChain<string>(1))
             .BuildServiceProvider();
 
-        await services.GetService<ShitpostTronContext>()!
+        await services.GetService<ShitpostTronContext>()
             .Database
             .MigrateAsync();
 

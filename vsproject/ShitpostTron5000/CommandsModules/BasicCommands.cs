@@ -155,8 +155,8 @@ namespace ShitpostTron5000.CommandsModules
             Console.WriteLine($"I gave a status update.");
         }
 
-        [SlashCommand("move", "This moves someone to your channel. I should not be giving you this power.")]
-        public async Task Move(InteractionContext ctx, [Option("who", "Who are you bothering")] DiscordUser user, [Option("where", "where are you dumping this poor soul?")] DiscordChannel target)
+        [SlashCommand("move", "This moves someone to any channel. I should not be giving you this power.")]
+        public async Task Move(InteractionContext ctx, [Option("who", "Who are you bothering")] DiscordUser user, [Option("where", "where are you dumping this poor soul?")][ChannelTypes(ChannelType.Voice)]DiscordChannel target)
         {
             var member = await ctx.Guild.GetMemberAsync(user.Id);
             if (member.VoiceState.Channel.Guild == ctx.Guild)
