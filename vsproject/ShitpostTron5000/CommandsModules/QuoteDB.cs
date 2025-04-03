@@ -36,7 +36,7 @@ public class QuoteDB : ApplicationCommandModule
             return;
 
 
-        var quoteNumber = new Random().Next(_db.Quotes.Count());
+        var quoteNumber = new Random().Next(1,_db.Quotes.Count()+1);
         await SayQuote(ctx, quoteNumber);
     }
 
@@ -146,7 +146,7 @@ public class QuoteDB : ApplicationCommandModule
         
         if (targetMsg == null)
         {
-            await ctx.CreateResponseAsync($"I cant find a recent message by that user{(skip != 0 ? $" or I skipped it." : "")}.");
+            await ctx.CreateResponseAsync($"I cant find a recent message (I check the last 50 of the channel) by that user{(skip != 0 ? $" or I skipped it." : "")}.");
             return;
         }
 
