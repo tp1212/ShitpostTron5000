@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.Interactivity.Extensions;
+using System.Threading;
 
 
 namespace ShitpostTron5000.CommandsModules
@@ -21,19 +22,21 @@ namespace ShitpostTron5000.CommandsModules
         }
 
         [SlashCommand("manualkov", "Recruit your fellow server members to generate a string.")]
-        public async Task Markov(InteractionContext ctx, [Option("prompt", "a starting point for the chain.")] string prompt = "")
+        public async Task Markov(InteractionContext ctx, [Option("prompt", "a starting point for the chain.")] string prompt = "", [Option("Lookback", "The amount of words you can see at the end of the chain.")] long longlookback = 1)
         {
-            if(ctx.Guild == null)
+            int lookback = (int)longlookback;
+
+            if (ctx.Guild == null)
             {
                 await ctx.CreateResponseAsync("Well, this isnt a server, so this wont work. sorry.");
                 return;
             }
 
-            await ctx.CreateResponseAsync("Okay, starting it now!",true);
- 
-           var message = await ctx.Channel.SendMessageAsync($"We are doing a markov chain, *together*!\n" +
-                $"Please react to this message to join!\n" +
-                $"Starting in 2 minutes!");
+            await ctx.CreateResponseAsync("Okay, starting it now!", true);
+
+            var message = await ctx.Channel.SendMessageAsync($"We are doing a markov chain, *together*!\n" +
+                 $"Please react to this message to join!\n" +
+                 $"Starting in 2 minutes!");
 
             List<string> words = [];
 
@@ -46,44 +49,60 @@ namespace ShitpostTron5000.CommandsModules
 
             var participants = reactions.SelectMany(x => x.Users)
                 .Distinct()
-                .OrderBy(x=>Guid.NewGuid())
+                .OrderBy(x => Guid.NewGuid())
                 .ToList();
 
-            var length = participants.Count() + _random.Next(5);
-            var participantIndex = 0;
-
-            while (words.Count() < length)
+            try
             {
-                var nextParticipant = participants[participantIndex++%participants.Count()];
-                var member = await ctx.Guild.GetMemberAsync(nextParticipant.Id);
-                var talky = await member.CreateDmChannelAsync();
+                var participantIndex = 0;
 
-                var currentWordDetails = $"The current word is '{words.LastOrDefault()}', continue on from here.";
-
-                var details = (words.Count == 0, words.Count == length) switch 
+                while (true)
                 {
-                    (true,false) => "You are picking the first word on the chain, so capitalize it and stuff",
-                    (false,true) => $"You are picking the last word on the chain, so feel free to punctuate!\n{currentWordDetails}",
-                    _ => $"You are picking a middle word on the chain, so it should not have capitalisation and punctuation (unless you want it to)\n{currentWordDetails}."
-                };
+                    await message.ModifyAsync("Chain in progress." + new string('.', words.Count));
 
-                string memberMessage = $"You are the next in the markov chain.\n" +
-                    $"{details}\n" +
-                    $"I will read the next DM you send to me and I will use the contents of that message to add to the chain. (Try to keep it one word/phrase I guess?)";
+                    var nextParticipant = participants[participantIndex++ % participants.Count()];
+                    var member = await ctx.Guild.GetMemberAsync(nextParticipant.Id);
+                    var talky = await member.CreateDmChannelAsync();
 
-                await talky.SendMessageAsync(memberMessage);
+                    var currentWordDetails = $"You should continue on from '{string.Join(" ",words.TakeLast(2))}', there is {words.Count} words in the current result and there's {participants.Count} players.";
 
-                var response = await talky.GetNextMessageAsync();
-                if(response.TimedOut)
-                {
-                    await talky.SendMessageAsync("You took too long, skipped your turn!");
-                    continue;
+                    var details = (words.Count == 0) switch
+                    {
+                        true => "You are picking the first word on the chain.",
+                        _ => $"{currentWordDetails}.\n" +
+                        $"if you want to end the chain, add END to your message. (Yes, all caps)"
+                    };
+
+                    string memberMessage = $"{details}\n" +
+                        $"I will read the next DM you send to me and add it to the chain. (Try to keep it one word I guess?)\n";
+
+                    await talky.SendMessageAsync(memberMessage);
+
+                    var response = await talky.GetNextMessageAsync(TimeSpan.FromSeconds(70));
+                    if (response.TimedOut)
+                    {
+                        await talky.SendMessageAsync("You took too long, skipped your turn!");
+                        continue;
+                    }
+                    var responseText = response.Result.Content;
+
+                    if (responseText.Contains("END"))
+                    {
+                        words.Add(response.Result.Content.Replace("END", "").Trim());
+                        break;
+                    }
+
+                    words.Add(response.Result.Content.Trim());
+                    await talky.SendMessageAsync("Great contribution!");
                 }
-                words.Add(response.Result.Content);
-                await talky.SendMessageAsync("Great contribution!");
+            }
+            catch (Exception)
+            {
+                await ctx.Channel.SendMessageAsync("Something went wrong, so the chain got ended early. Heres what I got though" + string.Join(" ", words));
+                throw;
             }
             var result = string.Join(" ", words);
-            await ctx.Channel.SendMessageAsync(result);            
+            await ctx.Channel.SendMessageAsync(result);
         }
     }
 }
