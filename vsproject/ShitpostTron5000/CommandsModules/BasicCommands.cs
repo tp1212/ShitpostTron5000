@@ -86,13 +86,15 @@ namespace ShitpostTron5000.CommandsModules
                     .WaitForReactionAsync(x =>
                             x.Emoji.Name == emj,
                         TimeSpan.FromMinutes(5));
+                
                 if (reacts.TimedOut)
                     return;
                 if (reacts.Result.User == discordClient.CurrentUser)
                     continue;
                 if (reacts.Result.Message != message)
                     continue;
-                await ctx.Member.SendMessageAsync("Kill zem, Kill zem all...");
+                var reactsMember = await ctx.Guild.GetMemberAsync(reacts.Result.User.Id);              
+                await reactsMember.SendMessageAsync("Kill zem, Kill zem all...");
             }
         }
 
