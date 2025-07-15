@@ -72,7 +72,8 @@ class Program
         commands.RegisterCommands<Timers>();
         commands.RegisterCommands<QuoteDB>();
         commands.RegisterCommands<MarkovChain>();
-        
+        commands.RegisterCommands<Manualkov>();
+                
         client.ClientErrored += async (sender, args) =>
         {
             Log.Logger.Error("Client Error", args.Exception);//Todo:use extra event data.
@@ -126,6 +127,7 @@ had an error:
             {
                 await sender.DeleteGuildApplicationCommandAsync(guild, command.Id);
             }
+            
         }
     }
 }
